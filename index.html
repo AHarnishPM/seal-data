@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mentorship Entry Form</title>
+    <title>Member Entry Form</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         input { margin: 10px 0; padding: 10px; width: 300px; }
@@ -12,11 +12,12 @@
     </style>
 </head>
 <body>
-    <h1>Mentorship Information Entry</h1>
-    <form id="mentorshipForm">
-        <input type="text" id="personName" placeholder="Mentee's Name" required><br>
-        <input type="text" id="gradYear" placeholder="Graduation Year" required><br>
-        <input type="text" id="mentorName" placeholder="Mentor's Name" required><br>
+    <h1>Member Information Entry</h1>
+    <p>Please enter information for any members you know, following the formatting outlined in grey inside the boxes.</p>
+    <form id="memberForm">
+        <input type="text" id="memberName" placeholder="Member's Name (e.g. Aaron Harnish)" required><br>
+        <input type="text" id="gradYear" placeholder="Member Graduation Year (e.g. 2027)" required><br>
+        <input type="text" id="bigName" placeholder="Member's Big's Name (e.g. Cedric Urbina-Orton)" required><br>
         <button type="button" id="addEntryButton">Add Entry</button>
         <p id="message"></p>
     </form>
@@ -26,15 +27,16 @@
         // Firebase Configuration
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getFirestore, addDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        
         const firebaseConfig = {
-            apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w",
+            apiKey: "YOUR_API_KEY",
             authDomain: "seal-data-collection.firebaseapp.com",
             projectId: "seal-data-collection",
             storageBucket: "seal-data-collection.firebasestorage.app",
             messagingSenderId: "17642329541",
             appId: "1:17642329541:web:39d214d2f5c8b01ce2a7ac",
             measurementId: "G-BMCBQ5S8QV"
-          };
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -46,8 +48,8 @@
         });
 
         async function addEntry() {
-            const personName = document.getElementById("personName").value.trim();
-            const mentorName = document.getElementById("mentorName").value.trim();
+            const memberName = document.getElementById("memberName").value.trim();
+            const bigName = document.getElementById("bigName").value.trim();
             const gradYear = document.getElementById("gradYear").value.trim();
             const message = document.getElementById("message");
 
@@ -59,7 +61,7 @@
                 return;
             }
 
-            if (!personName || !mentorName || !gradYear) {
+            if (!memberName || !bigName || !gradYear) {
                 message.textContent = "All fields are required.";
                 message.className = "error";
                 return;
@@ -69,29 +71,29 @@
                 // Check for duplicates
                 const q = query(
                     collection(db, "mentorship"),
-                    where("personName", "==", personName),
+                    where("memberName", "==", memberName),
                     where("gradYear", "==", gradYear)
                 );
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
                     // Duplicate found
-                    message.textContent = "This mentee and graduation year already exist.";
+                    message.textContent = "This member and graduation year already exist.";
                     message.className = "error";
                     return;
                 }
 
                 // Add entry to Firestore
                 await addDoc(collection(db, "mentorship"), {
-                    personName,
+                    memberName,
                     gradYear,
-                    mentorName,
+                    bigName,
                     timestamp: new Date()
                 });
 
                 message.textContent = "Entry added successfully!";
                 message.className = "success";
-                document.getElementById("mentorshipForm").reset();
+                document.getElementById("memberForm").reset();
             } catch (error) {
                 console.error("Error adding document:", error);
                 message.textContent = "Failed to add entry.";
