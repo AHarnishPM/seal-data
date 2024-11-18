@@ -17,7 +17,7 @@
     <form id="mentorshipForm">
         <input type="text" id="personName" placeholder="Person's Name" required><br>
         <input type="text" id="mentorName" placeholder="Mentor's Name" required><br>
-        <button type="button" onclick="addEntry()">Add Entry</button>
+        <button type="button" id="addEntryButton">Add Entry</button>
         <p id="message"></p>
     </form>
 
@@ -26,6 +26,7 @@
         // Firebase Configuration
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
         import { getFirestore, addDoc, collection } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w",
             authDomain: "seal-data-collection.firebaseapp.com",
@@ -34,12 +35,13 @@
             messagingSenderId: "17642329541",
             appId: "1:17642329541:web:39d214d2f5c8b01ce2a7ac",
             measurementId: "G-BMCBQ5S8QV"
-          };
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Define the addEntry function
         async function addEntry() {
             const personName = document.getElementById("personName").value.trim();
             const mentorName = document.getElementById("mentorName").value.trim();
@@ -52,21 +54,23 @@
             }
 
             try {
-                // Add entry to Firestore
                 await addDoc(collection(db, "mentorship"), {
-                    personName: personName,
-                    mentorName: mentorName,
+                    personName,
+                    mentorName,
                     timestamp: new Date()
                 });
                 message.textContent = "Entry added successfully!";
                 message.className = "success";
                 document.getElementById("mentorshipForm").reset();
             } catch (error) {
-                console.error("Error adding document: ", error);
+                console.error("Error adding document:", error);
                 message.textContent = "Failed to add entry.";
                 message.className = "error";
             }
         }
+
+        // Attach event listener to the button
+        document.getElementById("addEntryButton").addEventListener("click", addEntry);
     </script>
 </body>
 </html>
