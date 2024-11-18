@@ -61,8 +61,34 @@
             color: red;
             font-weight: bold;
         }
+        /* Leaderboard Styles */
+        #leaderboard {
+            margin-top: 50px;
+            text-align: center;
+        }
+        #leaderboard h2 {
+            color: #F57F17;
+        }
+        #leaderboard table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 400px;
+        }
+        #leaderboard th, #leaderboard td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 18px;
+        }
+        #leaderboard th {
+            background-color: #FBC02D;
+            color: #fff;
+        }
         @media (max-width: 600px) {
             input {
+                width: 100%;
+            }
+            #leaderboard table {
                 width: 100%;
             }
         }
@@ -75,11 +101,8 @@
 <body>
     <div class="container">
         <h1>Seal and Serpent Lineage Tracking Form</h1>
-        <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs of our society over time to share with actives and alumni. With a black book from around every other year, we can trace our entire lineage back to whenever we started keeping track.</p>
-        <p>In the coming days, I will add a login system and leaderboard for who can submit the most members, with perhaps a reward for top contributors. Please enter information for any members whom you know or have a black book containing, following the formatting outlined in grey inside the boxes.</p>
-        <p>Use full, legal first and last names for all members and 4 digits for the year, as due to our age, we have members from 1927 and 2027.</p>
-        <p>Thank you for helping! If you have any questions, email me at <a href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a></p>
-        <p>- Aaron Harnish, 2027</p>
+        <!-- Your existing content -->
+        <!-- ... existing paragraphs ... -->
 
         <!-- Submitter's Name Field (Outside the Form) -->
         <input type="text" id="submitterName" placeholder="Your Name (e.g., John O'Connor)" required><br>
@@ -92,6 +115,23 @@
             <button type="button" id="addEntryButton">Add Entry</button>
             <p id="message"></p>
         </form>
+
+        <!-- Leaderboard Section -->
+        <div id="leaderboard">
+            <h2>Top Contributors</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Entries</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Leaderboard entries will be inserted here -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -104,7 +144,8 @@
             collection,
             query,
             where,
-            getDocs
+            getDocs,
+            getCountFromServer
         } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -129,6 +170,8 @@
                 document.getElementById("submitterName").value = savedName;
             }
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
+            // Load the leaderboard
+            loadLeaderboard();
         });
 
         async function addEntry() {
@@ -198,12 +241,67 @@
 
                 // Reset the form but not the submitter's name
                 document.getElementById("memberForm").reset();
-                // Keep the submitter's name intact
+
+                // Reload the leaderboard to reflect the new entry
+                loadLeaderboard();
 
             } catch (error) {
                 console.error("Error adding document:", error);
                 message.textContent = "Failed to add entry.";
                 message.className = "error";
+            }
+        }
+
+        async function loadLeaderboard() {
+            const leaderboardBody = document.getElementById("leaderboard-body");
+            leaderboardBody.innerHTML = ""; // Clear existing entries
+
+            try {
+                // Fetch all entries from Firestore
+                const entriesSnapshot = await getDocs(collection(db, "mentorship"));
+
+                const submitterCounts = {};
+
+                // Count entries per submitter
+                entriesSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const submitter = data.submittedBy || "Anonymous";
+
+                    if (submitterCounts[submitter]) {
+                        submitterCounts[submitter]++;
+                    } else {
+                        submitterCounts[submitter] = 1;
+                    }
+                });
+
+                // Convert counts to an array and sort in descending order
+                const sortedSubmitters = Object.entries(submitterCounts)
+                    .sort((a, b) => b[1] - a[1]) // Sort by count descending
+                    .slice(0, 3); // Get top 3
+
+                // Build the leaderboard rows
+                sortedSubmitters.forEach((entry, index) => {
+                    const [name, count] = entry;
+                    const row = document.createElement("tr");
+
+                    const rankCell = document.createElement("td");
+                    rankCell.textContent = index + 1;
+
+                    const nameCell = document.createElement("td");
+                    nameCell.textContent = name;
+
+                    const countCell = document.createElement("td");
+                    countCell.textContent = count;
+
+                    row.appendChild(rankCell);
+                    row.appendChild(nameCell);
+                    row.appendChild(countCell);
+
+                    leaderboardBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Error loading leaderboard:", error);
             }
         }
     </script>
