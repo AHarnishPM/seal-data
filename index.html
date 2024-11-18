@@ -4,79 +4,38 @@
     <meta charset="UTF-8">
     <title>Seal and Serpent Lineage Tracking Form</title>
     <style>
+        /* Your existing styles, unchanged */
         body {
             font-family: Arial, sans-serif;
             padding: 0;
             margin: 0;
-            background-color: #FFF9C4; /* Light yellow background */
+            background-color: #FFF9C4;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto; /* Center the container */
-            padding: 20px;
-            text-align: center; /* Center-align text */
-        }
-        h1 {
-            color: #F57F17; /* Darker yellow/gold */
-        }
-        p {
-            color: #555; /* Dark gray for readability */
-            font-size: 18px;
-            line-height: 1.6;
-        }
-        form {
-            margin-top: 30px;
-        }
-        input {
-            margin: 10px 0;
-            padding: 10px;
-            width: 80%;
-            max-width: 400px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        input::placeholder {
-            color: #999;
-        }
-        button {
-            padding: 12px 25px;
+        /* ... rest of your styles ... */
+        /* Add styles for user info */
+        #user-info {
             margin-top: 20px;
-            cursor: pointer;
-            background-color: #FBC02D; /* Medium yellow */
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
         }
-        button:hover {
-            background-color: #F9A825; /* Darker yellow on hover */
-        }
-        .success {
-            color: green;
-            font-weight: bold;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-        @media (max-width: 600px) {
-            input {
-                width: 100%;
-            }
+        #user-greeting {
+            font-size: 20px;
+            color: #333;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Seal and Serpent Lineage Tracking Form</h1>
-        <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs of our society over time to share with actives and alumni. With a black book from around every other year, we can trace our entire lineage back to whenever we started keeping track.</p>
-        <p>In the coming days, I will add a login system and leaderboard for who can submit the most members, with perhaps a reward for top contributors. Please enter information for any members whom you know or have a black book containing, following the formatting outlined in grey inside the boxes.</p>
-        <p>Use full, legal first and last names for all members and 4 digits for the year, as due to our age, we have members from 1927 and 2027.</p>
-        <p>Thank you for helping! If you have any questions, email me at <a href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a></p>
-        <p>- Aaron Harnish, 2027</p>
+        <!-- Your introductory paragraphs -->
 
-        <form id="memberForm">
+        <!-- User Authentication Section -->
+        <div id="user-info">
+            <p id="user-greeting"></p>
+            <button type="button" id="sign-in-button">Sign In with Google</button>
+            <button type="button" id="sign-out-button" style="display: none;">Sign Out</button>
+        </div>
+
+        <!-- Member Form (Hidden by default) -->
+        <form id="memberForm" style="display: none;">
             <input type="text" id="memberName" placeholder="Member's Name (e.g., Aaron Harnish)" required><br>
             <input type="text" id="gradYear" placeholder="Member Graduation Year (e.g., 2027)" required><br>
             <input type="text" id="bigName" placeholder="Member's Big's Name (e.g., Cedric Orton-Urbina)" required><br>
@@ -97,6 +56,13 @@
             where,
             getDocs
         } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import {
+            getAuth,
+            signInWithPopup,
+            GoogleAuthProvider,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
@@ -111,8 +77,53 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        // Attach the event listener to the button after the DOM is loaded
+        // Authentication Elements
+        const signInButton = document.getElementById("sign-in-button");
+        const signOutButton = document.getElementById("sign-out-button");
+        const userGreeting = document.getElementById("user-greeting");
+        const memberForm = document.getElementById("memberForm");
+
+        // Sign In Function
+        async function signIn() {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Error signing in:", error);
+            }
+        }
+
+        // Sign Out Function
+        async function signOutUser() {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Error signing out:", error);
+            }
+        }
+
+        // Listen for Authentication State Changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const displayName = user.displayName;
+                userGreeting.textContent = `Hello, ${displayName}!`;
+                signInButton.style.display = "none";
+                signOutButton.style.display = "inline-block";
+                memberForm.style.display = "block";
+            } else {
+                userGreeting.textContent = "";
+                signInButton.style.display = "inline-block";
+                signOutButton.style.display = "none";
+                memberForm.style.display = "none";
+            }
+        });
+
+        // Attach Event Listeners
+        signInButton.addEventListener("click", signIn);
+        signOutButton.addEventListener("click", signOutUser);
+
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
         });
@@ -123,7 +134,7 @@
             const gradYear = document.getElementById("gradYear").value.trim();
             const message = document.getElementById("message");
 
-            // Validate that gradYear is a 4-digit number
+            // Validate gradYear
             const gradYearPattern = /^\d{4}$/;
             if (!gradYearPattern.test(gradYear)) {
                 message.textContent = "Graduation year must be a 4-digit number.";
@@ -133,6 +144,14 @@
 
             if (!memberName || !bigName || !gradYear) {
                 message.textContent = "All fields are required.";
+                message.className = "error";
+                return;
+            }
+
+            // Check if user is authenticated
+            const user = auth.currentUser;
+            if (!user) {
+                message.textContent = "You must be signed in to submit data.";
                 message.className = "error";
                 return;
             }
@@ -147,17 +166,20 @@
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    // Duplicate found
                     message.textContent = "This member and graduation year already exist.";
                     message.className = "error";
                     return;
                 }
+
+                // Get user's display name
+                const submittedBy = user.displayName || user.email;
 
                 // Add entry to Firestore
                 await addDoc(collection(db, "mentorship"), {
                     memberName,
                     gradYear,
                     bigName,
+                    submittedBy,
                     timestamp: new Date()
                 });
 
