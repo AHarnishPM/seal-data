@@ -82,13 +82,13 @@
         <p>- Aaron Harnish, 2027</p>
 
         <!-- Submitter's Name Field (Outside the Form) -->
-        <input type="text" id="submitterName" placeholder="Your Name (e.g., John Doe)" required><br>
+        <input type="text" id="submitterName" placeholder="Your Name (e.g., John O'Connor)" required><br>
 
         <!-- Member Form -->
         <form id="memberForm">
-            <input type="text" id="memberName" placeholder="Member's Name (e.g., Aaron Harnish)" required><br>
+            <input type="text" id="memberName" placeholder="Member's Name (e.g., Aaron Smith-Jones)" required><br>
             <input type="text" id="gradYear" placeholder="Member Graduation Year (e.g., 2027)" required><br>
-            <input type="text" id="bigName" placeholder="Member's Big's Name (e.g., Cedric Orton-Urbina)" required><br>
+            <input type="text" id="bigName" placeholder="Member's Big's Name (e.g., Cedric O'Brien)" required><br>
             <button type="button" id="addEntryButton">Add Entry</button>
             <p id="message"></p>
         </form>
@@ -128,7 +128,6 @@
             if (savedName) {
                 document.getElementById("submitterName").value = savedName;
             }
-
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
         });
 
@@ -154,14 +153,14 @@
                 return;
             }
 
-            // Optional: Validate names to contain only letters and spaces
-            const namePattern = /^[a-zA-Z\s]+$/;
+            // Update name validation regex to allow letters, spaces, hyphens, and apostrophes
+            const namePattern = /^[a-zA-Z\s'-]+$/;
             if (
                 !namePattern.test(memberName) ||
                 !namePattern.test(bigName) ||
                 !namePattern.test(submitterName)
             ) {
-                message.textContent = "Names should contain only letters and spaces.";
+                message.textContent = "Names can only contain letters, spaces, hyphens, and apostrophes.";
                 message.className = "error";
                 return;
             }
