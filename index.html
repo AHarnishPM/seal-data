@@ -9,19 +9,19 @@
             font-family: Arial, sans-serif;
             padding: 0;
             margin: 0;
-            background-color: #FFF9C4;
+            background-color: #FFF9C4; /* Light yellow background */
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 0 auto; /* Center the container */
             padding: 20px;
-            text-align: center;
+            text-align: center; /* Center-align text */
         }
         h1 {
-            color: #F57F17;
+            color: #F57F17; /* Darker yellow/gold */
         }
         p {
-            color: #555;
+            color: #555; /* Dark gray for readability */
             font-size: 18px;
             line-height: 1.6;
         }
@@ -44,14 +44,14 @@
             padding: 12px 25px;
             margin-top: 20px;
             cursor: pointer;
-            background-color: #FBC02D;
+            background-color: #FBC02D; /* Medium yellow */
             color: #fff;
             border: none;
             border-radius: 5px;
             font-size: 16px;
         }
         button:hover {
-            background-color: #F9A825;
+            background-color: #F9A825; /* Darker yellow on hover */
         }
         .success {
             color: green;
@@ -75,8 +75,11 @@
 <body>
     <div class="container">
         <h1>Seal and Serpent Lineage Tracking Form</h1>
-        <!-- Your existing content -->
-        <!-- ... -->
+        <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs of our society over time to share with actives and alumni. With a black book from around every other year, we can trace our entire lineage back to whenever we started keeping track.</p>
+        <p>In the coming days, I will add a login system and leaderboard for who can submit the most members, with perhaps a reward for top contributors. Please enter information for any members whom you know or have a black book containing, following the formatting outlined in grey inside the boxes.</p>
+        <p>Use full, legal first and last names for all members and 4 digits for the year, as due to our age, we have members from 1927 and 2027.</p>
+        <p>Thank you for helping! If you have any questions, email me at <a href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a></p>
+        <p>- Aaron Harnish, 2027</p>
 
         <!-- Submitter's Name Field (Outside the Form) -->
         <input type="text" id="submitterName" placeholder="Your Name (e.g., John Doe)" required><br>
@@ -120,6 +123,12 @@
 
         // Attach the event listener to the button after the DOM is loaded
         document.addEventListener("DOMContentLoaded", () => {
+            // Retrieve and set the submitter's name from local storage if available
+            const savedName = localStorage.getItem('submitterName');
+            if (savedName) {
+                document.getElementById("submitterName").value = savedName;
+            }
+
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
         });
 
@@ -144,6 +153,21 @@
                 message.className = "error";
                 return;
             }
+
+            // Optional: Validate names to contain only letters and spaces
+            const namePattern = /^[a-zA-Z\s]+$/;
+            if (
+                !namePattern.test(memberName) ||
+                !namePattern.test(bigName) ||
+                !namePattern.test(submitterName)
+            ) {
+                message.textContent = "Names should contain only letters and spaces.";
+                message.className = "error";
+                return;
+            }
+
+            // Save submitter's name to local storage
+            localStorage.setItem('submitterName', submitterName);
 
             try {
                 // Check for duplicates
