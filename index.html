@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Seal and Serpent Lineage Tracking Form</title>
+    <!-- Include Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap">
     <style>
-        /* Your existing styles */
+        /* Updated font-family to use Open Sans */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Open Sans', Arial, sans-serif;
             padding: 0;
             margin: 0;
             background-color: #FFF9C4; /* Light yellow background */
@@ -74,15 +76,28 @@
             border-collapse: collapse;
             width: 80%;
             max-width: 400px;
+            font-size: 18px;
         }
         #leaderboard th, #leaderboard td {
             border: 1px solid #ccc;
             padding: 10px;
-            font-size: 18px;
         }
         #leaderboard th {
             background-color: #FBC02D;
             color: #fff;
+        }
+        /* Styles for gold, silver, and bronze rows */
+        .gold {
+            background-color: #FFD700; /* Gold color */
+            color: #000;
+        }
+        .silver {
+            background-color: #C0C0C0; /* Silver color */
+            color: #000;
+        }
+        .bronze {
+            background-color: #CD7F32; /* Bronze color */
+            color: #000;
         }
         @media (max-width: 600px) {
             input {
@@ -101,17 +116,20 @@
 <body>
     <div class="container">
         <h1>Seal and Serpent Lineage Tracking Form</h1>
-        <!-- Your existing content -->
-        <!-- ... existing paragraphs ... -->
+        <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs of our society over time to share with actives and alumni. With a black book from around every other year, we can trace our entire lineage back to whenever we started keeping track.</p>
+        <p>In the coming days, I will add a login system and leaderboard for who can submit the most members, with perhaps a reward for top contributors. Please enter information for any members whom you know or have a black book containing, following the formatting outlined in grey inside the boxes.</p>
+        <p>Use full, legal first and last names for all members and 4 digits for the year, as due to our age, we have members from 1927 and 2027.</p>
+        <p>Thank you for helping! If you have any questions, email me at <a href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a></p>
+        <p>- Aaron Harnish, 2027</p>
 
         <!-- Submitter's Name Field (Outside the Form) -->
-        <input type="text" id="submitterName" placeholder="Your Name (e.g., John O'Connor)" required><br>
+        <input type="text" id="submitterName" placeholder="Your Name (e.g., Aaron Harnish)" required><br>
 
         <!-- Member Form -->
         <form id="memberForm">
-            <input type="text" id="memberName" placeholder="Member's Name (e.g., Aaron Smith-Jones)" required><br>
+            <input type="text" id="memberName" placeholder="Member's Name (e.g., John Smith)" required><br>
             <input type="text" id="gradYear" placeholder="Member Graduation Year (e.g., 2027)" required><br>
-            <input type="text" id="bigName" placeholder="Member's Big's Name (e.g., Cedric O'Brien)" required><br>
+            <input type="text" id="bigName" placeholder="Member's Big's Name (e.g., Cedric Orton-Urbina)" required><br>
             <button type="button" id="addEntryButton">Add Entry</button>
             <p id="message"></p>
         </form>
@@ -145,7 +163,6 @@
             query,
             where,
             getDocs,
-            getCountFromServer
         } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -168,6 +185,9 @@
             const savedName = localStorage.getItem('submitterName');
             if (savedName) {
                 document.getElementById("submitterName").value = savedName;
+            } else {
+                // Set default placeholder name
+                document.getElementById("submitterName").placeholder = "Your Name (e.g., Aaron Harnish)";
             }
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             // Load the leaderboard
@@ -296,6 +316,15 @@
                     row.appendChild(rankCell);
                     row.appendChild(nameCell);
                     row.appendChild(countCell);
+
+                    // Add class to row based on rank
+                    if (index === 0) {
+                        row.classList.add("gold");
+                    } else if (index === 1) {
+                        row.classList.add("silver");
+                    } else if (index === 2) {
+                        row.classList.add("bronze");
+                    }
 
                     leaderboardBody.appendChild(row);
                 });
