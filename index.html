@@ -7,9 +7,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap">
     <!-- Treant.js CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css">
-    <!-- Treant.js JS and dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/vendor/raphael.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
+    <!-- Custom Styles -->
     <style>
         /* Updated font-family to use Open Sans */
         body {
@@ -217,7 +215,12 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Include Raphael.js before Treant.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <!-- Include Treant.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
+
+    <!-- Firebase SDK and Your JavaScript Code -->
     <script type="module">
         // Firebase Configuration
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
