@@ -137,7 +137,7 @@
         }
         #familyTree {
             width: 100%;
-            height: 600px;
+            height: 800px; /* Increased height to accommodate larger trees */
             overflow: auto;
             border: 1px solid #ccc;
             margin: 0 auto;
@@ -152,9 +152,14 @@
             border-radius: 5px;
             background-color: #FBC02D;
             color: #000;
+            min-width: 100px; /* Ensure nodes have a minimum width */
+            min-height: 50px; /* Ensure nodes have a minimum height */
+            max-width: 200px; /* Optional: limit maximum width */
+            word-wrap: break-word; /* Wrap long text */
         }
         .node-name {
             font-weight: bold;
+            font-size: 14px; /* Reduced font size */
         }
         .node-title {
             font-size: 12px;
@@ -540,9 +545,9 @@
                 chart: {
                     container: "#familyTree",
                     rootOrientation: "NORTH", // Vertical orientation
-                    levelSeparation: 30,
-                    siblingSeparation: 20,
-                    subTeeSeparation: 30,
+                    levelSeparation: 50, // Increased separation to prevent overlap
+                    siblingSeparation: 30,
+                    subTeeSeparation: 50,
                     scrollbar: "native",
                     connectors: {
                         type: "step"
