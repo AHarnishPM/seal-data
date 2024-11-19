@@ -137,13 +137,16 @@
         }
         #familyTree {
             width: 100%;
-            height: 800px; /* Increased height to accommodate larger trees */
-            overflow: auto;
+            height: 1000px; /* Increased height to make the window larger */
+            overflow: hidden; /* Hidden overflow to prevent scrollbars during zooming */
             border: 1px solid #ccc;
             margin: 0 auto;
+            position: relative; /* Added for panzoom */
         }
         .Treant {
             position: relative;
+            /* Added transform-origin for zooming */
+            transform-origin: 0 0;
         }
         .node {
             text-align: center;
@@ -221,7 +224,14 @@
         <!-- Family Tree Section -->
         <div id="familyTreeSection">
             <h2>Family Tree</h2>
-            <div id="familyTree"></div>
+            <div id="familyTree">
+                <!-- Panzoom controls (optional) -->
+                <div id="treeControls" style="position: absolute; top: 10px; left: 10px; z-index: 10;">
+                    <button id="zoomIn">Zoom In</button>
+                    <button id="zoomOut">Zoom Out</button>
+                    <button id="resetZoom">Reset</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -229,6 +239,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
     <!-- Include Treant.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
+    <!-- Include Panzoom.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.1/dist/panzoom.min.js"></script>
 
     <!-- Firebase SDK and Your JavaScript Code -->
     <script type="module">
@@ -481,10 +493,13 @@
                 const treeConfig = buildTreeConfig(members);
 
                 // Clear any previous tree
-                document.getElementById("familyTree").innerHTML = "";
+                document.getElementById("familyTree").innerHTML = '';
 
                 // Visualize the tree
-                new Treant(treeConfig);
+                new Treant(treeConfig, function() {
+                    // Initialize panzoom after the tree is loaded
+                    initPanZoom();
+                });
 
             } catch (error) {
                 console.error("Error loading family tree:", error);
@@ -577,6 +592,30 @@
             }
 
             return chartConfig;
+        }
+
+        // Function to initialize panzoom
+        function initPanZoom() {
+            const treeContainer = document.querySelector('#familyTree .Treant');
+            if (!treeContainer) return;
+
+            // Initialize Panzoom
+            const panzoom = Panzoom(treeContainer, {
+                maxScale: 5,
+                minScale: 0.5,
+                contain: 'outside'
+            });
+
+            // Enable mouse wheel zooming
+            treeContainer.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+
+            // Zoom controls (optional)
+            document.getElementById('zoomIn').addEventListener('click', panzoom.zoomIn);
+            document.getElementById('zoomOut').addEventListener('click', panzoom.zoomOut);
+            document.getElementById('resetZoom').addEventListener('click', () => {
+                panzoom.zoomTo(1);
+                panzoom.pan(0, 0);
+            });
         }
     </script>
 </body>
