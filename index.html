@@ -160,6 +160,11 @@
             font-size: 12px;
             color: #555;
         }
+        /* Style for bigs not listed as members */
+        .node-bigs-not-member {
+            background-color: #2196F3; /* Blue background */
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -306,7 +311,6 @@
             localStorage.setItem('submitterName', submitterName);
 
             try {
-                // Revert duplicate checking code back to original
                 // Check for duplicates (ignore gradYear)
                 const q = query(
                     collection(db, "mentorship"),
@@ -420,7 +424,7 @@
             }
 
             try {
-                // Perform case-insensitive partial match search
+                // Perform partial match search (case-sensitive)
                 const q = query(
                     collection(db, "mentorship"),
                     orderBy("memberName"),
@@ -488,7 +492,7 @@
             const nodes = {};
             const roots = [];
 
-            // Create node configs
+            // Create node configs for all members
             members.forEach(member => {
                 memberMap[member.memberName] = member;
                 nodes[member.memberName] = {
@@ -504,12 +508,32 @@
             // Build the tree by linking nodes
             members.forEach(member => {
                 const node = nodes[member.memberName];
-                if (member.bigName && nodes[member.bigName]) {
-                    nodes[member.bigName].children.push(node);
+                if (member.bigName) {
+                    if (nodes[member.bigName]) {
+                        // Big is a listed member
+                        nodes[member.bigName].children.push(node);
+                    } else {
+                        // Big is not a listed member
+                        // Create a node for the big with a different style
+                        nodes[member.bigName] = {
+                            text: {
+                                name: member.bigName,
+                                title: "Big (Not Listed)"
+                            },
+                            HTMLclass: 'node node-bigs-not-member',
+                            children: [node]
+                        };
+                        // Add to roots since the big has no parent
+                        roots.push(nodes[member.bigName]);
+                    }
                 } else {
+                    // No big specified, add to roots
                     roots.push(node);
                 }
             });
+
+            // Remove duplicates from roots array
+            const uniqueRoots = [...new Set(roots)];
 
             // If there's only one root, use it; otherwise, create a dummy root
             const chartConfig = {
@@ -537,12 +561,12 @@
                 nodeStructure: {}
             };
 
-            if (roots.length === 1) {
-                chartConfig.nodeStructure = roots[0];
+            if (uniqueRoots.length === 1) {
+                chartConfig.nodeStructure = uniqueRoots[0];
             } else {
                 chartConfig.nodeStructure = {
                     text: { name: "Root" },
-                    children: roots,
+                    children: uniqueRoots,
                     HTMLclass: 'node'
                 };
             }
