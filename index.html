@@ -5,105 +5,50 @@
     <title>Seal and Serpent Lineage Tracking Form</title>
     <!-- Include Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap">
-    <!-- D3.js -->
-    <script src="https://d3js.org/d3.v6.min.js"></script>
-    <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- html2canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Treant.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css">
+    <!-- Treant.js JS and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/vendor/raphael.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
     <style>
-        /* Updated font-family to use Open Sans */
+        /* Your existing styles */
         body {
             font-family: 'Open Sans', Arial, sans-serif;
             padding: 0;
             margin: 0;
             background-color: #FFF9C4; /* Light yellow background */
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto; /* Center the container */
-            padding: 20px;
-            text-align: center; /* Center-align text */
-        }
-        h1 {
-            color: #F57F17; /* Darker yellow/gold */
-        }
-        p {
-            color: #555; /* Dark gray for readability */
-            font-size: 18px;
-            line-height: 1.6;
-        }
-        form {
-            margin-top: 30px;
-        }
-        input {
-            margin: 10px 0;
-            padding: 10px;
-            width: 80%;
-            max-width: 400px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        input::placeholder {
-            color: #999;
-        }
-        button {
-            padding: 12px 25px;
-            margin-top: 20px;
-            cursor: pointer;
-            background-color: #FBC02D; /* Medium yellow */
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #F9A825; /* Darker yellow on hover */
-        }
-        .success {
-            color: green;
-            font-weight: bold;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-        /* Leaderboard Styles */
-        #leaderboard {
+        /* ... existing styles ... */
+
+        /* Family Tree Section Styles */
+        #familyTreeSection {
             margin-top: 50px;
             text-align: center;
         }
-        #leaderboard h2 {
-            color: #F57F17;
-        }
-        #leaderboard table {
-            margin: 0 auto;
-            border-collapse: collapse;
-            width: 80%;
-            max-width: 400px;
-            font-size: 18px;
-        }
-        #leaderboard th, #leaderboard td {
+        #familyTree {
+            width: 100%;
+            height: 600px;
+            overflow: auto;
             border: 1px solid #ccc;
-            padding: 10px;
+            margin: 0 auto;
         }
-        #leaderboard th {
+        .Treant {
+            position: relative;
+        }
+        .node {
+            text-align: center;
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 5px;
             background-color: #FBC02D;
-            color: #fff;
-        }
-        /* Styles for gold, silver, and bronze rows */
-        .gold {
-            background-color: #FFD700; /* Gold color */
             color: #000;
         }
-        .silver {
-            background-color: #C0C0C0; /* Silver color */
-            color: #000;
+        .node-name {
+            font-weight: bold;
         }
-        .bronze {
-            background-color: #CD7F32; /* Bronze color */
-            color: #000;
+        .node-title {
+            font-size: 12px;
+            color: #555;
         }
         @media (max-width: 600px) {
             input {
@@ -112,59 +57,9 @@
             #leaderboard table {
                 width: 100%;
             }
-        }
-        /* Add margin to separate the submitter's name field */
-        #submitterName {
-            margin-top: 40px;
-        }
-        /* Search Section Styles */
-        #searchSection {
-            margin-top: 50px;
-            text-align: center;
-        }
-        #searchSection h2 {
-            color: #F57F17;
-        }
-        #searchResult {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #333;
-        }
-        /* Family Tree Section Styles */
-        #familyTreeSection {
-            margin-top: 50px;
-            text-align: center;
-        }
-        #familyTree {
-            margin: 0 auto;
-            width: 100%;
-            overflow-x: auto;
-        }
-        #generatePDFButton {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #FBC02D;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #generatePDFButton:hover {
-            background-color: #F9A825;
-        }
-        /* Family Tree Visualization Styles */
-        .node circle {
-            fill: #FBC02D;
-            stroke: #555;
-            stroke-width: 2px;
-        }
-        .node text {
-            font: 14px sans-serif;
-        }
-        .link {
-            fill: none;
-            stroke: #555;
-            stroke-width: 2px;
+            #familyTree {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -190,35 +85,15 @@
         </form>
 
         <!-- Search Section -->
-        <div id="searchSection">
-            <h2>Search for a Member</h2>
-            <input type="text" id="searchName" placeholder="Enter Member's Name to Search">
-            <button type="button" id="searchButton">Search</button>
-            <div id="searchResult"></div>
-        </div>
+        <!-- ... existing search section ... -->
 
         <!-- Leaderboard Section -->
-        <div id="leaderboard">
-            <h2>Top Contributors</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Name</th>
-                        <th>Entries</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard-body">
-                    <!-- Leaderboard entries will be inserted here -->
-                </tbody>
-            </table>
-        </div>
+        <!-- ... existing leaderboard section ... -->
 
         <!-- Family Tree Section -->
         <div id="familyTreeSection">
             <h2>Family Tree</h2>
             <div id="familyTree"></div>
-            <button id="generatePDFButton">Download Family Tree as PDF</button>
         </div>
     </div>
 
@@ -251,201 +126,14 @@
 
         // Attach event listeners after the DOM is fully loaded
         document.addEventListener("DOMContentLoaded", () => {
-            // Retrieve and set the submitter's name from local storage if available
-            const savedName = localStorage.getItem('submitterName');
-            if (savedName) {
-                document.getElementById("submitterName").value = savedName;
-            } else {
-                // Set default placeholder name
-                document.getElementById("submitterName").placeholder = "Your Name (e.g., Aaron Harnish)";
-            }
+            // Existing code...
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
-            document.getElementById("generatePDFButton").addEventListener("click", generatePDF);
             // Load the leaderboard
             loadLeaderboard();
             // Load the family tree
             loadFamilyTree();
         });
-
-        async function addEntry() {
-            const memberName = document.getElementById("memberName").value.trim();
-            const bigName = document.getElementById("bigName").value.trim();
-            const gradYear = document.getElementById("gradYear").value.trim();
-            const submitterName = document.getElementById("submitterName").value.trim();
-            const message = document.getElementById("message");
-
-            // Ensure all required fields are filled
-            if (!memberName || !bigName || !gradYear || !submitterName) {
-                message.textContent = "All fields are required.";
-                message.className = "error";
-                return;
-            }
-
-            // Validate that gradYear is a 4-digit number
-            const gradYearPattern = /^\d{4}$/;
-            if (!gradYearPattern.test(gradYear)) {
-                message.textContent = "Graduation year must be a 4-digit number.";
-                message.className = "error";
-                return;
-            }
-
-            // Update name validation regex to allow letters, spaces, hyphens, and apostrophes
-            const namePattern = /^[a-zA-Z\s'-]+$/;
-            if (
-                !namePattern.test(memberName) ||
-                !namePattern.test(bigName) ||
-                !namePattern.test(submitterName)
-            ) {
-                message.textContent = "Names can only contain letters, spaces, hyphens, and apostrophes.";
-                message.className = "error";
-                return;
-            }
-
-            // Save submitter's name to local storage
-            localStorage.setItem('submitterName', submitterName);
-
-            try {
-                // Check for duplicates (ignore gradYear)
-                const q = query(
-                    collection(db, "mentorship"),
-                    where("memberName", "==", memberName)
-                );
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    // Duplicate found
-                    message.textContent = "This member already exists.";
-                    message.className = "error";
-                    return;
-                }
-
-                // Add entry to Firestore
-                await addDoc(collection(db, "mentorship"), {
-                    memberName,
-                    gradYear,
-                    bigName,
-                    submittedBy: submitterName,
-                    timestamp: new Date()
-                });
-
-                message.textContent = "Entry added successfully!";
-                message.className = "success";
-
-                // Reset the form but not the submitter's name
-                document.getElementById("memberForm").reset();
-
-                // Reload the leaderboard to reflect the new entry
-                loadLeaderboard();
-                // Reload the family tree
-                loadFamilyTree();
-
-            } catch (error) {
-                console.error("Error adding document:", error);
-                message.textContent = "Failed to add entry.";
-                message.className = "error";
-            }
-        }
-
-        async function loadLeaderboard() {
-            const leaderboardBody = document.getElementById("leaderboard-body");
-            leaderboardBody.innerHTML = ""; // Clear existing entries
-
-            try {
-                // Fetch all entries from Firestore
-                const entriesSnapshot = await getDocs(collection(db, "mentorship"));
-
-                const submitterCounts = {};
-
-                // Count entries per submitter
-                entriesSnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const submitter = data.submittedBy || "Anonymous";
-
-                    if (submitterCounts[submitter]) {
-                        submitterCounts[submitter]++;
-                    } else {
-                        submitterCounts[submitter] = 1;
-                    }
-                });
-
-                // Convert counts to an array and sort in descending order
-                const sortedSubmitters = Object.entries(submitterCounts)
-                    .sort((a, b) => b[1] - a[1]) // Sort by count descending
-                    .slice(0, 3); // Get top 3
-
-                // Build the leaderboard rows
-                sortedSubmitters.forEach((entry, index) => {
-                    const [name, count] = entry;
-                    const row = document.createElement("tr");
-
-                    const rankCell = document.createElement("td");
-                    rankCell.textContent = index + 1;
-
-                    const nameCell = document.createElement("td");
-                    nameCell.textContent = name;
-
-                    const countCell = document.createElement("td");
-                    countCell.textContent = count;
-
-                    row.appendChild(rankCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(countCell);
-
-                    // Add class to row based on rank
-                    if (index === 0) {
-                        row.classList.add("gold");
-                    } else if (index === 1) {
-                        row.classList.add("silver");
-                    } else if (index === 2) {
-                        row.classList.add("bronze");
-                    }
-
-                    leaderboardBody.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error("Error loading leaderboard:", error);
-            }
-        }
-
-        async function searchMember() {
-            const searchName = document.getElementById("searchName").value.trim();
-            const searchResult = document.getElementById("searchResult");
-
-            if (!searchName) {
-                searchResult.textContent = "Please enter a member's name to search.";
-                return;
-            }
-
-            try {
-                const q = query(
-                    collection(db, "mentorship"),
-                    where("memberName", "==", searchName)
-                );
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    searchResult.textContent = "Member not found.";
-                } else {
-                    searchResult.innerHTML = "";
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const resultDiv = document.createElement("div");
-                        resultDiv.innerHTML = `
-                            <p><strong>Member Name:</strong> ${data.memberName}</p>
-                            <p><strong>Graduation Year:</strong> ${data.gradYear}</p>
-                            <p><strong>Big's Name:</strong> ${data.bigName}</p>
-                            <p><strong>Submitted By:</strong> ${data.submittedBy}</p>
-                        `;
-                        searchResult.appendChild(resultDiv);
-                    });
-                }
-            } catch (error) {
-                console.error("Error searching for member:", error);
-                searchResult.textContent = "An error occurred while searching.";
-            }
-        }
 
         // Function to load the family tree
         async function loadFamilyTree() {
@@ -465,121 +153,86 @@
                 });
 
                 // Build the tree data
-                const treeData = buildTreeData(members);
+                const treeConfig = buildTreeConfig(members);
 
                 // Visualize the tree
-                visualizeTree(treeData);
+                new Treant(treeConfig);
 
             } catch (error) {
                 console.error("Error loading family tree:", error);
             }
         }
 
-        // Function to build tree data
-        function buildTreeData(members) {
-            // Create a map for easy lookup
+        // Function to build tree config for Treant.js
+        function buildTreeConfig(members) {
             const memberMap = {};
-            members.forEach(member => {
-                memberMap[member.memberName] = { ...member, children: [] };
-            });
-
+            const nodes = {};
             const roots = [];
 
-            // Build the tree
+            // Create node configs
             members.forEach(member => {
-                if (member.bigName && memberMap[member.bigName]) {
-                    memberMap[member.bigName].children.push(memberMap[member.memberName]);
+                memberMap[member.memberName] = member;
+                nodes[member.memberName] = {
+                    text: {
+                        name: member.memberName,
+                        title: "Grad Year: " + member.gradYear
+                    },
+                    HTMLclass: 'node',
+                    children: []
+                };
+            });
+
+            // Build the tree by linking nodes
+            members.forEach(member => {
+                const node = nodes[member.memberName];
+                if (member.bigName && nodes[member.bigName]) {
+                    nodes[member.bigName].children.push(node);
                 } else {
-                    // If no big found or big not in data, this is a root member
-                    roots.push(memberMap[member.memberName]);
+                    roots.push(node);
                 }
             });
 
-            // If there's only one root, return it; otherwise, create a dummy root
+            // If there's only one root, use it; otherwise, create a dummy root
+            const chartConfig = {
+                chart: {
+                    container: "#familyTree",
+                    rootOrientation: "NORTH", // Vertical orientation
+                    levelSeparation: 30,
+                    siblingSeparation: 20,
+                    subTeeSeparation: 30,
+                    scrollbar: "native",
+                    connectors: {
+                        type: "step"
+                    },
+                    node: {
+                        HTMLclass: "node",
+                        collapsable: true
+                    },
+                    animation: {
+                        nodeAnimation: "easeOutBounce",
+                        nodeSpeed: 700,
+                        connectorsAnimation: "bounce",
+                        connectorsSpeed: 700
+                    }
+                },
+                nodeStructure: {}
+            };
+
             if (roots.length === 1) {
-                return roots[0];
+                chartConfig.nodeStructure = roots[0];
             } else {
-                return { memberName: "Root", children: roots };
+                chartConfig.nodeStructure = {
+                    text: { name: "Root" },
+                    children: roots,
+                    HTMLclass: 'node'
+                };
             }
+
+            return chartConfig;
         }
 
-        // Function to visualize the tree using D3.js
-        function visualizeTree(treeData) {
-            // Clear previous visualization
-            d3.select("#familyTree").selectAll("*").remove();
-
-            // Set the dimensions and margins of the diagram
-            const margin = { top: 20, right: 90, bottom: 30, left: 90 },
-                  width = 960 - margin.left - margin.right,
-                  height = 600 - margin.top - margin.bottom;
-
-            // Append the svg object to the #familyTree div
-            const svg = d3.select("#familyTree").append("svg")
-                .attr("width", width + margin.right + margin.left)
-                .attr("height", height + margin.top + margin.bottom)
-              .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            const root = d3.hierarchy(treeData, function(d) {
-                return d.children;
-            });
-
-            // Assigns the x and y position for the nodes
-            const treeLayout = d3.tree().size([height, width]);
-            treeLayout(root);
-
-            // Adds the links between the nodes
-            svg.selectAll(".link")
-                .data(root.links())
-                .enter().append("path")
-                .attr("class", "link")
-                .attr("d", d3.linkHorizontal()
-                    .x(function(d) { return d.y; })
-                    .y(function(d) { return d.x; }));
-
-            // Adds each node as a group
-            const node = svg.selectAll(".node")
-                .data(root.descendants())
-                .enter().append("g")
-                .attr("class", function(d) { 
-                    return "node" + (d.children ? " node--internal" : " node--leaf"); })
-                .attr("transform", function(d) { 
-                    return "translate(" + d.y + "," + d.x + ")"; });
-
-            // Adds the circle to the node
-            node.append("circle")
-                .attr("r", 10);
-
-            // Adds the text to the node
-            node.append("text")
-                .attr("dy", ".35em")
-                .attr("x", function(d) { 
-                    return d.children ? -13 : 13; })
-                .style("text-anchor", function(d) { 
-                    return d.children ? "end" : "start"; })
-                .text(function(d) { return d.data.memberName; });
-        }
-
-        // Function to generate PDF
-        async function generatePDF() {
-            const familyTreeElement = document.getElementById("familyTreeSection");
-            // Use html2canvas to capture the family tree section
-            const canvas = await html2canvas(familyTreeElement, { scale: 2 });
-            const imgData = canvas.toDataURL('image/png');
-
-            // Create a new jsPDF instance
-            const pdf = new jspdf.jsPDF({
-                orientation: 'landscape',
-                unit: 'px',
-                format: [canvas.width, canvas.height]
-            });
-
-            // Add the image to the PDF
-            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-
-            // Save the PDF
-            pdf.save('family_tree.pdf');
-        }
+        // Existing functions: addEntry(), loadLeaderboard(), searchMember()
+        // ... include these functions as they were in your code ...
     </script>
 </body>
 </html>
