@@ -349,6 +349,68 @@
             }
         }
 
+        async function loadLeaderboard() {
+            const leaderboardBody = document.getElementById("leaderboard-body");
+            leaderboardBody.innerHTML = ""; // Clear existing entries
+
+            try {
+                // Fetch all entries from Firestore
+                const entriesSnapshot = await getDocs(collection(db, "mentorship"));
+
+                const submitterCounts = {};
+
+                // Count entries per submitter
+                entriesSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const submitter = data.submittedBy || "Anonymous";
+
+                    if (submitterCounts[submitter]) {
+                        submitterCounts[submitter]++;
+                    } else {
+                        submitterCounts[submitter] = 1;
+                    }
+                });
+
+                // Convert counts to an array and sort in descending order
+                const sortedSubmitters = Object.entries(submitterCounts)
+                    .sort((a, b) => b[1] - a[1]) // Sort by count descending
+                    .slice(0, 3); // Get top 3
+
+                // Build the leaderboard rows
+                sortedSubmitters.forEach((entry, index) => {
+                    const [name, count] = entry;
+                    const row = document.createElement("tr");
+
+                    const rankCell = document.createElement("td");
+                    rankCell.textContent = index + 1;
+
+                    const nameCell = document.createElement("td");
+                    nameCell.textContent = name;
+
+                    const countCell = document.createElement("td");
+                    countCell.textContent = count;
+
+                    row.appendChild(rankCell);
+                    row.appendChild(nameCell);
+                    row.appendChild(countCell);
+
+                    // Add class to row based on rank
+                    if (index === 0) {
+                        row.classList.add("gold");
+                    } else if (index === 1) {
+                        row.classList.add("silver");
+                    } else if (index === 2) {
+                        row.classList.add("bronze");
+                    }
+
+                    leaderboardBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Error loading leaderboard:", error);
+            }
+        }
+
         async function searchMember() {
             const searchName = document.getElementById("searchName").value.trim();
             const searchResult = document.getElementById("searchResult");
@@ -390,8 +452,104 @@
             }
         }
 
-        // Existing functions: loadLeaderboard(), loadFamilyTree(), buildTreeConfig()
-        // Include these functions as they were in your code
+        // Function to load the family tree
+        async function loadFamilyTree() {
+            try {
+                // Fetch all entries from Firestore
+                const entriesSnapshot = await getDocs(collection(db, "mentorship"));
+                const members = [];
+
+                // Build an array of member objects
+                entriesSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    members.push({
+                        memberName: data.memberName,
+                        bigName: data.bigName,
+                        gradYear: data.gradYear,
+                    });
+                });
+
+                // Build the tree data
+                const treeConfig = buildTreeConfig(members);
+
+                // Clear any previous tree
+                document.getElementById("familyTree").innerHTML = "";
+
+                // Visualize the tree
+                new Treant(treeConfig);
+
+            } catch (error) {
+                console.error("Error loading family tree:", error);
+            }
+        }
+
+        // Function to build tree config for Treant.js
+        function buildTreeConfig(members) {
+            const memberMap = {};
+            const nodes = {};
+            const roots = [];
+
+            // Create node configs
+            members.forEach(member => {
+                memberMap[member.memberName] = member;
+                nodes[member.memberName] = {
+                    text: {
+                        name: member.memberName,
+                        title: "Grad Year: " + member.gradYear
+                    },
+                    HTMLclass: 'node',
+                    children: []
+                };
+            });
+
+            // Build the tree by linking nodes
+            members.forEach(member => {
+                const node = nodes[member.memberName];
+                if (member.bigName && nodes[member.bigName]) {
+                    nodes[member.bigName].children.push(node);
+                } else {
+                    roots.push(node);
+                }
+            });
+
+            // If there's only one root, use it; otherwise, create a dummy root
+            const chartConfig = {
+                chart: {
+                    container: "#familyTree",
+                    rootOrientation: "NORTH", // Vertical orientation
+                    levelSeparation: 30,
+                    siblingSeparation: 20,
+                    subTeeSeparation: 30,
+                    scrollbar: "native",
+                    connectors: {
+                        type: "step"
+                    },
+                    node: {
+                        HTMLclass: "node",
+                        collapsable: true
+                    },
+                    animation: {
+                        nodeAnimation: "easeOutBounce",
+                        nodeSpeed: 700,
+                        connectorsAnimation: "bounce",
+                        connectorsSpeed: 700
+                    }
+                },
+                nodeStructure: {}
+            };
+
+            if (roots.length === 1) {
+                chartConfig.nodeStructure = roots[0];
+            } else {
+                chartConfig.nodeStructure = {
+                    text: { name: "Root" },
+                    children: roots,
+                    HTMLclass: 'node'
+                };
+            }
+
+            return chartConfig;
+        }
     </script>
 </body>
 </html>
