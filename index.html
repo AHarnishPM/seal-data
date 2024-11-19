@@ -111,6 +111,19 @@
         #submitterName {
             margin-top: 40px;
         }
+        /* Search Section Styles */
+        #searchSection {
+            margin-top: 50px;
+            text-align: center;
+        }
+        #searchSection h2 {
+            color: #F57F17;
+        }
+        #searchResult {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -133,6 +146,14 @@
             <button type="button" id="addEntryButton">Add Entry</button>
             <p id="message"></p>
         </form>
+
+        <!-- Search Section -->
+        <div id="searchSection">
+            <h2>Search for a Member</h2>
+            <input type="text" id="searchName" placeholder="Enter Member's Name to Search">
+            <button type="button" id="searchButton">Search</button>
+            <div id="searchResult"></div>
+        </div>
 
         <!-- Leaderboard Section -->
         <div id="leaderboard">
@@ -190,6 +211,7 @@
                 document.getElementById("submitterName").placeholder = "Your Name (e.g., Aaron Harnish)";
             }
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
+            document.getElementById("searchButton").addEventListener("click", searchMember);
             // Load the leaderboard
             loadLeaderboard();
         });
@@ -201,17 +223,17 @@
             const submitterName = document.getElementById("submitterName").value.trim();
             const message = document.getElementById("message");
 
-            // Validate that gradYear is a 4-digit number
-            const gradYearPattern = /^\d{4}$/;
-            if (!gradYearPattern.test(gradYear)) {
-                message.textContent = "Graduation year must be a 4-digit number.";
+            // Ensure all required fields are filled
+            if (!memberName || !bigName || !gradYear || !submitterName) {
+                message.textContent = "All fields are required.";
                 message.className = "error";
                 return;
             }
 
-            // Ensure all required fields are filled
-            if (!memberName || !bigName || !gradYear || !submitterName) {
-                message.textContent = "All fields are required.";
+            // Validate that gradYear is a 4-digit number
+            const gradYearPattern = /^\d{4}$/;
+            if (!gradYearPattern.test(gradYear)) {
+                message.textContent = "Graduation year must be a 4-digit number.";
                 message.className = "error";
                 return;
             }
@@ -232,17 +254,16 @@
             localStorage.setItem('submitterName', submitterName);
 
             try {
-                // Check for duplicates
+                // Check for duplicates (ignore gradYear)
                 const q = query(
                     collection(db, "mentorship"),
-                    where("memberName", "==", memberName),
-                    where("gradYear", "==", gradYear)
+                    where("memberName", "==", memberName)
                 );
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
                     // Duplicate found
-                    message.textContent = "This member and graduation year already exist.";
+                    message.textContent = "This member already exists.";
                     message.className = "error";
                     return;
                 }
@@ -331,6 +352,44 @@
 
             } catch (error) {
                 console.error("Error loading leaderboard:", error);
+            }
+        }
+
+        async function searchMember() {
+            const searchName = document.getElementById("searchName").value.trim();
+            const searchResult = document.getElementById("searchResult");
+
+            if (!searchName) {
+                searchResult.textContent = "Please enter a member's name to search.";
+                return;
+            }
+
+            try {
+                const q = query(
+                    collection(db, "mentorship"),
+                    where("memberName", "==", searchName)
+                );
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    searchResult.textContent = "Member not found.";
+                } else {
+                    searchResult.innerHTML = "";
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const resultDiv = document.createElement("div");
+                        resultDiv.innerHTML = `
+                            <p><strong>Member Name:</strong> ${data.memberName}</p>
+                            <p><strong>Graduation Year:</strong> ${data.gradYear}</p>
+                            <p><strong>Big's Name:</strong> ${data.bigName}</p>
+                            <p><strong>Submitted By:</strong> ${data.submittedBy}</p>
+                        `;
+                        searchResult.appendChild(resultDiv);
+                    });
+                }
+            } catch (error) {
+                console.error("Error searching for member:", error);
+                searchResult.textContent = "An error occurred while searching.";
             }
         }
     </script>
