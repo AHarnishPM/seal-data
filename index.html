@@ -17,7 +17,7 @@
             background-color: #FFF9C4; /* Light yellow background */
         }
         .container {
-            max-width: 800px;
+            max-width: 1200px; /* Increased max-width to make the container wider */
             margin: 0 auto; /* Center the container */
             padding: 20px;
             text-align: center; /* Center-align text */
@@ -91,7 +91,7 @@
             margin: 0 auto;
             border-collapse: collapse;
             width: 80%;
-            max-width: 400px;
+            max-width: 600px; /* Increased max-width for the table */
             font-size: 18px;
         }
         #leaderboard th, #leaderboard td {
@@ -415,7 +415,7 @@
                 // Convert counts to an array and sort in descending order
                 const sortedSubmitters = Object.entries(submitterCounts)
                     .sort((a, b) => b[1] - a[1]) // Sort by count descending
-                    .slice(0, 3); // Get top 3
+                    .slice(0, 7); // Get top 7
 
                 // Build the leaderboard rows
                 sortedSubmitters.forEach((entry, index) => {
@@ -443,6 +443,7 @@
                     } else if (index === 2) {
                         row.classList.add("bronze");
                     }
+                    // For ranks 4 to 7, no additional class (white background)
 
                     leaderboardBody.appendChild(row);
                 });
