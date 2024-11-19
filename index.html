@@ -11,15 +11,127 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/vendor/raphael.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
     <style>
-        /* Your existing styles */
+        /* Updated font-family to use Open Sans */
         body {
             font-family: 'Open Sans', Arial, sans-serif;
             padding: 0;
             margin: 0;
             background-color: #FFF9C4; /* Light yellow background */
         }
-        /* ... existing styles ... */
-
+        .container {
+            max-width: 800px;
+            margin: 0 auto; /* Center the container */
+            padding: 20px;
+            text-align: center; /* Center-align text */
+        }
+        h1 {
+            color: #F57F17; /* Darker yellow/gold */
+        }
+        p {
+            color: #555; /* Dark gray for readability */
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        form {
+            margin-top: 30px;
+        }
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 80%;
+            max-width: 400px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input::placeholder {
+            color: #999;
+        }
+        button {
+            padding: 12px 25px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #FBC02D; /* Medium yellow */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #F9A825; /* Darker yellow on hover */
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        /* Leaderboard Styles */
+        #leaderboard {
+            margin-top: 50px;
+            text-align: center;
+        }
+        #leaderboard h2 {
+            color: #F57F17;
+        }
+        #leaderboard table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 400px;
+            font-size: 18px;
+        }
+        #leaderboard th, #leaderboard td {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #leaderboard th {
+            background-color: #FBC02D;
+            color: #fff;
+        }
+        /* Styles for gold, silver, and bronze rows */
+        .gold {
+            background-color: #FFD700; /* Gold color */
+            color: #000;
+        }
+        .silver {
+            background-color: #C0C0C0; /* Silver color */
+            color: #000;
+        }
+        .bronze {
+            background-color: #CD7F32; /* Bronze color */
+            color: #000;
+        }
+        @media (max-width: 600px) {
+            input {
+                width: 100%;
+            }
+            #leaderboard table {
+                width: 100%;
+            }
+            #familyTree {
+                width: 100%;
+            }
+        }
+        /* Add margin to separate the submitter's name field */
+        #submitterName {
+            margin-top: 40px;
+        }
+        /* Search Section Styles */
+        #searchSection {
+            margin-top: 50px;
+            text-align: center;
+        }
+        #searchSection h2 {
+            color: #F57F17;
+        }
+        #searchResult {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
         /* Family Tree Section Styles */
         #familyTreeSection {
             margin-top: 50px;
@@ -50,17 +162,6 @@
             font-size: 12px;
             color: #555;
         }
-        @media (max-width: 600px) {
-            input {
-                width: 100%;
-            }
-            #leaderboard table {
-                width: 100%;
-            }
-            #familyTree {
-                width: 100%;
-            }
-        }
     </style>
 </head>
 <body>
@@ -85,10 +186,29 @@
         </form>
 
         <!-- Search Section -->
-        <!-- ... existing search section ... -->
+        <div id="searchSection">
+            <h2>Search for a Member</h2>
+            <input type="text" id="searchName" placeholder="Enter Member's Name to Search">
+            <button type="button" id="searchButton">Search</button>
+            <div id="searchResult"></div>
+        </div>
 
         <!-- Leaderboard Section -->
-        <!-- ... existing leaderboard section ... -->
+        <div id="leaderboard">
+            <h2>Top Contributors</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Entries</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Leaderboard entries will be inserted here -->
+                </tbody>
+            </table>
+        </div>
 
         <!-- Family Tree Section -->
         <div id="familyTreeSection">
@@ -126,7 +246,14 @@
 
         // Attach event listeners after the DOM is fully loaded
         document.addEventListener("DOMContentLoaded", () => {
-            // Existing code...
+            // Retrieve and set the submitter's name from local storage if available
+            const savedName = localStorage.getItem('submitterName');
+            if (savedName) {
+                document.getElementById("submitterName").value = savedName;
+            } else {
+                // Set default placeholder name
+                document.getElementById("submitterName").placeholder = "Your Name (e.g., Aaron Harnish)";
+            }
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
             // Load the leaderboard
@@ -134,6 +261,185 @@
             // Load the family tree
             loadFamilyTree();
         });
+
+        async function addEntry() {
+            const memberName = document.getElementById("memberName").value.trim();
+            const bigName = document.getElementById("bigName").value.trim();
+            const gradYear = document.getElementById("gradYear").value.trim();
+            const submitterName = document.getElementById("submitterName").value.trim();
+            const message = document.getElementById("message");
+
+            // Ensure all required fields are filled
+            if (!memberName || !bigName || !gradYear || !submitterName) {
+                message.textContent = "All fields are required.";
+                message.className = "error";
+                return;
+            }
+
+            // Validate that gradYear is a 4-digit number
+            const gradYearPattern = /^\d{4}$/;
+            if (!gradYearPattern.test(gradYear)) {
+                message.textContent = "Graduation year must be a 4-digit number.";
+                message.className = "error";
+                return;
+            }
+
+            // Update name validation regex to allow letters, spaces, hyphens, and apostrophes
+            const namePattern = /^[a-zA-Z\s'-]+$/;
+            if (
+                !namePattern.test(memberName) ||
+                !namePattern.test(bigName) ||
+                !namePattern.test(submitterName)
+            ) {
+                message.textContent = "Names can only contain letters, spaces, hyphens, and apostrophes.";
+                message.className = "error";
+                return;
+            }
+
+            // Save submitter's name to local storage
+            localStorage.setItem('submitterName', submitterName);
+
+            try {
+                // Check for duplicates (ignore gradYear)
+                const q = query(
+                    collection(db, "mentorship"),
+                    where("memberName", "==", memberName)
+                );
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    // Duplicate found
+                    message.textContent = "This member already exists.";
+                    message.className = "error";
+                    return;
+                }
+
+                // Add entry to Firestore
+                await addDoc(collection(db, "mentorship"), {
+                    memberName,
+                    gradYear,
+                    bigName,
+                    submittedBy: submitterName,
+                    timestamp: new Date()
+                });
+
+                message.textContent = "Entry added successfully!";
+                message.className = "success";
+
+                // Reset the form but not the submitter's name
+                document.getElementById("memberForm").reset();
+
+                // Reload the leaderboard to reflect the new entry
+                loadLeaderboard();
+                // Reload the family tree
+                loadFamilyTree();
+
+            } catch (error) {
+                console.error("Error adding document:", error);
+                message.textContent = "Failed to add entry.";
+                message.className = "error";
+            }
+        }
+
+        async function loadLeaderboard() {
+            const leaderboardBody = document.getElementById("leaderboard-body");
+            leaderboardBody.innerHTML = ""; // Clear existing entries
+
+            try {
+                // Fetch all entries from Firestore
+                const entriesSnapshot = await getDocs(collection(db, "mentorship"));
+
+                const submitterCounts = {};
+
+                // Count entries per submitter
+                entriesSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const submitter = data.submittedBy || "Anonymous";
+
+                    if (submitterCounts[submitter]) {
+                        submitterCounts[submitter]++;
+                    } else {
+                        submitterCounts[submitter] = 1;
+                    }
+                });
+
+                // Convert counts to an array and sort in descending order
+                const sortedSubmitters = Object.entries(submitterCounts)
+                    .sort((a, b) => b[1] - a[1]) // Sort by count descending
+                    .slice(0, 3); // Get top 3
+
+                // Build the leaderboard rows
+                sortedSubmitters.forEach((entry, index) => {
+                    const [name, count] = entry;
+                    const row = document.createElement("tr");
+
+                    const rankCell = document.createElement("td");
+                    rankCell.textContent = index + 1;
+
+                    const nameCell = document.createElement("td");
+                    nameCell.textContent = name;
+
+                    const countCell = document.createElement("td");
+                    countCell.textContent = count;
+
+                    row.appendChild(rankCell);
+                    row.appendChild(nameCell);
+                    row.appendChild(countCell);
+
+                    // Add class to row based on rank
+                    if (index === 0) {
+                        row.classList.add("gold");
+                    } else if (index === 1) {
+                        row.classList.add("silver");
+                    } else if (index === 2) {
+                        row.classList.add("bronze");
+                    }
+
+                    leaderboardBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Error loading leaderboard:", error);
+            }
+        }
+
+        async function searchMember() {
+            const searchName = document.getElementById("searchName").value.trim();
+            const searchResult = document.getElementById("searchResult");
+
+            if (!searchName) {
+                searchResult.textContent = "Please enter a member's name to search.";
+                return;
+            }
+
+            try {
+                const q = query(
+                    collection(db, "mentorship"),
+                    where("memberName", "==", searchName)
+                );
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    searchResult.textContent = "Member not found.";
+                } else {
+                    searchResult.innerHTML = "";
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const resultDiv = document.createElement("div");
+                        resultDiv.innerHTML = `
+                            <p><strong>Member Name:</strong> ${data.memberName}</p>
+                            <p><strong>Graduation Year:</strong> ${data.gradYear}</p>
+                            <p><strong>Big's Name:</strong> ${data.bigName}</p>
+                            <p><strong>Submitted By:</strong> ${data.submittedBy}</p>
+                        `;
+                        searchResult.appendChild(resultDiv);
+                    });
+                }
+            } catch (error) {
+                console.error("Error searching for member:", error);
+                searchResult.textContent = "An error occurred while searching.";
+            }
+        }
 
         // Function to load the family tree
         async function loadFamilyTree() {
@@ -154,6 +460,9 @@
 
                 // Build the tree data
                 const treeConfig = buildTreeConfig(members);
+
+                // Clear any previous tree
+                document.getElementById("familyTree").innerHTML = "";
 
                 // Visualize the tree
                 new Treant(treeConfig);
@@ -230,9 +539,6 @@
 
             return chartConfig;
         }
-
-        // Existing functions: addEntry(), loadLeaderboard(), searchMember()
-        // ... include these functions as they were in your code ...
     </script>
 </body>
 </html>
