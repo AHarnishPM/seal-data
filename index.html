@@ -306,10 +306,11 @@
             localStorage.setItem('submitterName', submitterName);
 
             try {
-                // Check for duplicates (case-insensitive)
+                // Revert duplicate checking code back to original
+                // Check for duplicates (ignore gradYear)
                 const q = query(
                     collection(db, "mentorship"),
-                    where("memberNameLower", "==", memberName.toLowerCase())
+                    where("memberName", "==", memberName)
                 );
                 const querySnapshot = await getDocs(q);
 
@@ -323,10 +324,8 @@
                 // Add entry to Firestore
                 await addDoc(collection(db, "mentorship"), {
                     memberName,
-                    memberNameLower: memberName.toLowerCase(), // For case-insensitive matching
                     gradYear,
                     bigName,
-                    bigNameLower: bigName.toLowerCase(), // For case-insensitive matching
                     submittedBy: submitterName,
                     timestamp: new Date()
                 });
@@ -424,9 +423,9 @@
                 // Perform case-insensitive partial match search
                 const q = query(
                     collection(db, "mentorship"),
-                    orderBy("memberNameLower"),
-                    startAt(searchName.toLowerCase()),
-                    endAt(searchName.toLowerCase() + '\uf8ff')
+                    orderBy("memberName"),
+                    startAt(searchName),
+                    endAt(searchName + '\uf8ff')
                 );
                 const querySnapshot = await getDocs(q);
 
