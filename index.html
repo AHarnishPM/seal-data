@@ -151,14 +151,20 @@
             margin-top: 50px;
             text-align: center;
         }
-        #familyTree {
+        #familyTreeContainer {
             width: 100%;
             height: 1000px; /* Increased height to make the window larger */
             overflow: hidden; /* Hidden overflow to prevent scrollbars during zooming */
             border: 1px solid #ccc;
             margin: 0 auto;
-            position: relative; /* Added for panzoom */
-            touch-action: none; /* Prevent default touch actions for panzoom */
+            position: relative;
+            touch-action: none; /* Prevent default touch actions */
+        }
+        #familyTree {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            position: relative;
         }
         .Treant {
             position: relative;
@@ -244,13 +250,19 @@
         <!-- Family Tree Section -->
         <div id="familyTreeSection">
             <h2>Family Tree</h2>
-            <!-- Zoom controls above the family tree window -->
+            <!-- Zoom controls and collapse checkbox above the family tree window -->
             <div id="treeControls" style="margin-bottom: 10px;">
                 <button id="zoomIn">Zoom In</button>
                 <button id="zoomOut">Zoom Out</button>
+                <label style="margin-left: 20px;">
+                    <input type="checkbox" id="collapseCheckbox">
+                    Collapse Subtrees with Less Than 3 Members
+                </label>
             </div>
-            <div id="familyTree">
-                <!-- The family tree will be rendered here -->
+            <div id="familyTreeContainer">
+                <div id="familyTree">
+                    <!-- The family tree will be rendered here -->
+                </div>
             </div>
         </div>
     </div>
@@ -259,8 +271,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
     <!-- Include Treant.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
-    <!-- Include Panzoom.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.1/dist/panzoom.min.js"></script>
 
     <!-- Firebase SDK and Your JavaScript Code -->
     <script type="module">
@@ -292,6 +302,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Variables for zooming
+        let currentScale = 1;
+        const scaleStep = 0.1;
+        const minScale = 0.5;
+        const maxScale = 2;
+
         // Attach event listeners after the DOM is fully loaded
         document.addEventListener("DOMContentLoaded", () => {
             // Retrieve and set the submitter's name from local storage if available
@@ -305,11 +321,39 @@
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
 
+            // Event listeners for zoom buttons
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                if (currentScale < maxScale) {
+                    currentScale += scaleStep;
+                    setScale(currentScale);
+                }
+            });
+
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                if (currentScale > minScale) {
+                    currentScale -= scaleStep;
+                    setScale(currentScale);
+                }
+            });
+
+            // Event listener for collapse checkbox
+            document.getElementById('collapseCheckbox').addEventListener('change', () => {
+                loadFamilyTree();
+            });
+
             // Load the leaderboard
             loadLeaderboard();
             // Load the family tree
             loadFamilyTree();
         });
+
+        // Function to set the scale
+        function setScale(scale) {
+            const treeContainer = document.querySelector('#familyTree .Treant');
+            if (treeContainer) {
+                treeContainer.style.transform = `scale(${scale})`;
+            }
+        }
 
         async function addEntry() {
             const memberName = document.getElementById("memberName").value.trim();
@@ -463,7 +507,7 @@
             }
 
             try {
-                // Perform partial match search (case-sensitive)
+                // Perform partial match search (case-insensitive)
                 const q = query(
                     collection(db, "mentorship"),
                     orderBy("memberName"),
@@ -517,11 +561,12 @@
                 // Clear any previous tree
                 document.getElementById("familyTree").innerHTML = '';
 
+                // Reset scale
+                currentScale = 1;
+                setScale(currentScale);
+
                 // Visualize the tree
-                new Treant(treeConfig, function() {
-                    // Initialize panzoom after the tree is loaded
-                    initPanZoom();
-                });
+                new Treant(treeConfig);
 
             } catch (error) {
                 console.error("Error loading family tree:", error);
@@ -577,6 +622,9 @@
             // Remove duplicates from roots array
             const uniqueRoots = [...new Set(roots)];
 
+            // Determine if we need to collapse small subtrees
+            const collapseSmallSubtrees = document.getElementById('collapseCheckbox').checked;
+
             // If there's only one root, use it; otherwise, create a dummy root
             const chartConfig = {
                 chart: {
@@ -613,35 +661,27 @@
                 };
             }
 
+            // Collapse subtrees with less than 3 members
+            if (collapseSmallSubtrees) {
+                collapseSubtrees(chartConfig.nodeStructure);
+            }
+
             return chartConfig;
         }
 
-        // Function to initialize panzoom
-        function initPanZoom() {
-            const treeContainer = document.querySelector('#familyTree .Treant');
-            if (!treeContainer) return;
-
-            // Initialize Panzoom
-            const panzoom = Panzoom(treeContainer, {
-                maxScale: 5,
-                minScale: 0.5,
-                contain: 'outside',
-                cursor: 'move'
+        // Function to collapse subtrees with less than 3 members
+        function collapseSubtrees(node) {
+            if (!node.children || node.children.length === 0) {
+                return 1;
+            }
+            let totalDescendants = 0;
+            node.children.forEach(child => {
+                totalDescendants += collapseSubtrees(child);
             });
-
-            // Enable mouse wheel zooming
-            treeContainer.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
-
-            // Zoom controls
-            document.getElementById('zoomIn').addEventListener('click', function() {
-                panzoom.zoomIn();
-            });
-            document.getElementById('zoomOut').addEventListener('click', function() {
-                panzoom.zoomOut();
-            });
-
-            // Optional: Enable panning with click and drag
-            treeContainer.parentElement.addEventListener('mousedown', panzoom.pan);
+            if (totalDescendants < 3) {
+                node.collapsed = true;
+            }
+            return totalDescendants + 1;
         }
     </script>
 </body>
