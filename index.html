@@ -154,14 +154,15 @@
         #familyTree {
             width: 100%;
             height: 1000px; /* Increased height to make the window larger */
-            overflow: auto; /* Allow scrollbars if content overflows */
+            overflow: hidden; /* Hidden overflow to prevent scrollbars during zooming */
             border: 1px solid #ccc;
             margin: 0 auto;
-            position: relative;
+            position: relative; /* Added for panzoom */
+            touch-action: none; /* Prevent default touch actions for panzoom */
         }
         .Treant {
             position: relative;
-            transform-origin: top left; /* Ensure scaling from top-left corner */
+            transform-origin: 0 0;
         }
         .node {
             text-align: center;
@@ -243,13 +244,13 @@
         <!-- Family Tree Section -->
         <div id="familyTreeSection">
             <h2>Family Tree</h2>
-            <div id="familyTree">
-                <!-- The family tree will be rendered here -->
-            </div>
-            <!-- Zoom controls below the family tree window -->
-            <div id="treeControls" style="margin-top: 10px;">
+            <!-- Zoom controls above the family tree window -->
+            <div id="treeControls" style="margin-bottom: 10px;">
                 <button id="zoomIn">Zoom In</button>
                 <button id="zoomOut">Zoom Out</button>
+            </div>
+            <div id="familyTree">
+                <!-- The family tree will be rendered here -->
             </div>
         </div>
     </div>
@@ -258,6 +259,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
     <!-- Include Treant.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
+    <!-- Include Panzoom.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.1/dist/panzoom.min.js"></script>
 
     <!-- Firebase SDK and Your JavaScript Code -->
     <script type="module">
@@ -289,20 +292,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Define the initial scale
-        let currentScale = 1;
-        const scaleStep = 0.1;
-        const minScale = 0.5;
-        const maxScale = 2;
-
-        // Function to set the scale
-        function setScale(scale) {
-            const treeContainer = document.querySelector('#familyTree .Treant');
-            if (treeContainer) {
-                treeContainer.style.transform = `scale(${scale})`;
-            }
-        }
-
         // Attach event listeners after the DOM is fully loaded
         document.addEventListener("DOMContentLoaded", () => {
             // Retrieve and set the submitter's name from local storage if available
@@ -315,21 +304,6 @@
             }
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
-
-            // Event listeners for zoom buttons
-            document.getElementById('zoomIn').addEventListener('click', () => {
-                if (currentScale < maxScale) {
-                    currentScale += scaleStep;
-                    setScale(currentScale);
-                }
-            });
-
-            document.getElementById('zoomOut').addEventListener('click', () => {
-                if (currentScale > minScale) {
-                    currentScale -= scaleStep;
-                    setScale(currentScale);
-                }
-            });
 
             // Load the leaderboard
             loadLeaderboard();
@@ -543,12 +517,11 @@
                 // Clear any previous tree
                 document.getElementById("familyTree").innerHTML = '';
 
-                // Reset the scale when loading a new tree
-                currentScale = 1;
-                setScale(currentScale);
-
                 // Visualize the tree
-                new Treant(treeConfig);
+                new Treant(treeConfig, function() {
+                    // Initialize panzoom after the tree is loaded
+                    initPanZoom();
+                });
 
             } catch (error) {
                 console.error("Error loading family tree:", error);
@@ -641,6 +614,34 @@
             }
 
             return chartConfig;
+        }
+
+        // Function to initialize panzoom
+        function initPanZoom() {
+            const treeContainer = document.querySelector('#familyTree .Treant');
+            if (!treeContainer) return;
+
+            // Initialize Panzoom
+            const panzoom = Panzoom(treeContainer, {
+                maxScale: 5,
+                minScale: 0.5,
+                contain: 'outside',
+                cursor: 'move'
+            });
+
+            // Enable mouse wheel zooming
+            treeContainer.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+
+            // Zoom controls
+            document.getElementById('zoomIn').addEventListener('click', function() {
+                panzoom.zoomIn();
+            });
+            document.getElementById('zoomOut').addEventListener('click', function() {
+                panzoom.zoomOut();
+            });
+
+            // Optional: Enable panning with click and drag
+            treeContainer.parentElement.addEventListener('mousedown', panzoom.pan);
         }
     </script>
 </body>
