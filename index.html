@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
     <title>Seal and Serpent Lineage Tracking Form</title>
     <!-- Include Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap">
@@ -14,25 +17,36 @@
             font-family: 'Open Sans', Arial, sans-serif;
             padding: 0;
             margin: 0;
-            background-color: #FFF9C4; /* Light yellow background */
+            background-color: #FFF9C4;
+            /* Light yellow background */
         }
+
         .container {
-            max-width: 1200px; /* Increased max-width to make the container wider */
-            margin: 0 auto; /* Center the container */
+            max-width: 1200px;
+            /* Increased max-width to make the container wider */
+            margin: 0 auto;
+            /* Center the container */
             padding: 20px;
-            text-align: center; /* Center-align text */
+            text-align: center;
+            /* Center-align text */
         }
+
         h1 {
-            color: #F57F17; /* Darker yellow/gold */
+            color: #F57F17;
+            /* Darker yellow/gold */
         }
+
         p {
-            color: #555; /* Dark gray for readability */
+            color: #555;
+            /* Dark gray for readability */
             font-size: 18px;
             line-height: 1.6;
         }
+
         form {
             margin-top: 30px;
         }
+
         input {
             margin: 5px 0 15px 0;
             padding: 10px;
@@ -42,30 +56,38 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+
         input::placeholder {
             color: #999;
         }
+
         button {
             padding: 12px 25px;
             margin-top: 20px;
             cursor: pointer;
-            background-color: #FBC02D; /* Medium yellow */
+            background-color: #FBC02D;
+            /* Medium yellow */
             color: #fff;
             border: none;
             border-radius: 5px;
             font-size: 16px;
         }
+
         button:hover {
-            background-color: #F9A825; /* Darker yellow on hover */
+            background-color: #F9A825;
+            /* Darker yellow on hover */
         }
+
         .success {
             color: green;
             font-weight: bold;
         }
+
         .error {
             color: red;
             font-weight: bold;
         }
+
         /* Label Styles */
         label {
             display: block;
@@ -79,92 +101,123 @@
             margin-left: auto;
             margin-right: auto;
         }
+
         /* Leaderboard Styles */
         #leaderboard {
             margin-top: 50px;
             text-align: center;
         }
+
         #leaderboard h2 {
             color: #F57F17;
         }
+
         #leaderboard table {
             margin: 0 auto;
             border-collapse: collapse;
             width: 80%;
-            max-width: 600px; /* Increased max-width for the table */
+            max-width: 600px;
+            /* Increased max-width for the table */
             font-size: 18px;
         }
-        #leaderboard th, #leaderboard td {
+
+        #leaderboard th,
+        #leaderboard td {
             border: 1px solid #ccc;
             padding: 10px;
         }
+
         #leaderboard th {
             background-color: #FBC02D;
             color: #fff;
         }
+
         /* Styles for gold, silver, and bronze rows */
         .gold {
-            background-color: #FFD700; /* Gold color */
+            background-color: #FFD700;
+            /* Gold color */
             color: #000;
         }
+
         .silver {
-            background-color: #C0C0C0; /* Silver color */
+            background-color: #C0C0C0;
+            /* Silver color */
             color: #000;
         }
+
         .bronze {
-            background-color: #CD7F32; /* Bronze color */
+            background-color: #CD7F32;
+            /* Bronze color */
             color: #000;
         }
+
         @media (max-width: 600px) {
             input {
                 width: 100%;
             }
+
             label {
                 width: 100%;
             }
+
             #leaderboard table {
                 width: 100%;
             }
+
             #familyTree {
                 width: 100%;
             }
         }
+
         /* Add margin to separate the submitter's name field */
         #submitterName {
             margin-top: 10px;
         }
+
         /* Search Section Styles */
         #searchSection {
             margin-top: 50px;
             text-align: center;
         }
+
         #searchSection h2 {
             color: #F57F17;
         }
+
         #searchResult {
             margin-top: 20px;
             font-size: 18px;
             color: #333;
         }
+
         /* Family Tree Section Styles */
         #familyTreeSection {
             margin-top: 50px;
             text-align: center;
         }
+
         #familyTree {
             width: 100%;
-            height: 1000px; /* Increased height to make the window larger */
-            overflow: hidden; /* Hidden overflow to prevent scrollbars during zooming */
+            height: 1000px;
+            overflow: hidden;
+            /* keep this; Panzoom handles panning */
             border: 1px solid #ccc;
             margin: 0 auto;
-            position: relative; /* Added for panzoom */
-            touch-action: none; /* Prevent default touch actions for panzoom */
+            position: relative;
+            /* IMPORTANT: allow normal page scroll unless user is inside the stage */
+            overscroll-behavior: contain;
         }
+
         .Treant {
             position: relative;
-            /* Added transform-origin for zooming */
             transform-origin: 0 0;
+            /* IMPORTANT: touch gestures for Panzoom (pinch/drag) */
+            touch-action: none;
+            /* <- moved here from #familyTree */
+            -ms-touch-action: none;
+            /* older Edge */
         }
+
         .node {
             text-align: center;
             border: 1px solid #ccc;
@@ -172,33 +225,48 @@
             border-radius: 5px;
             background-color: #FBC02D;
             color: #000;
-            min-width: 100px; /* Ensure nodes have a minimum width */
-            min-height: 50px; /* Ensure nodes have a minimum height */
-            max-width: 200px; /* Optional: limit maximum width */
-            word-wrap: break-word; /* Wrap long text */
+            min-width: 100px;
+            /* Ensure nodes have a minimum width */
+            min-height: 50px;
+            /* Ensure nodes have a minimum height */
+            max-width: 200px;
+            /* Optional: limit maximum width */
+            word-wrap: break-word;
+            /* Wrap long text */
         }
+
         .node-name {
             font-weight: bold;
-            font-size: 14px; /* Reduced font size */
+            font-size: 14px;
+            /* Reduced font size */
         }
+
         .node-title {
             font-size: 12px;
             color: #555;
         }
+
         /* Style for bigs not listed as members */
         .node-bigs-not-member {
-            background-color: #2196F3; /* Blue background */
+            background-color: #2196F3;
+            /* Blue background */
             color: #fff;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Seal and Serpent Lineage Tracking Form</h1>
-        <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs of our society over time to share with actives and alumni. With a black book from around every other year, we can trace our entire lineage back to whenever we started keeping track.</p>
-        <p>Please enter information for any members whom you know or have a black book containing, following the formatting outlined in grey inside the boxes.</p>
-        <p>Enter your name in the first box to count towards the leaderboard. Use full, legal first and last names for all members and 4 digits for the year, as due to our age, we have members from 1927 and 2027.</p>
-        <p>Thank you for helping! If you have any questions, email me at <a href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a></p>
+        <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs of our
+            society over time to share with actives and alumni. With a black book from around every other year, we can
+            trace our entire lineage back to whenever we started keeping track.</p>
+        <p>Please enter information for any members whom you know or have a black book containing, following the
+            formatting outlined in grey inside the boxes.</p>
+        <p>Enter your name in the first box to count towards the leaderboard. Use full, legal first and last names for
+            all members and 4 digits for the year, as due to our age, we have members from 1927 and 2027.</p>
+        <p>Thank you for helping! If you have any questions, email me at <a
+                href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a></p>
         <p>- Aaron Harnish, 2027</p>
 
         <!-- Submitter's Name Field (Outside the Form) -->
@@ -247,7 +315,8 @@
             <h2>Family Tree</h2>
             <div id="familyTree">
                 <!-- Panzoom controls (optional) -->
-                <div id="treeControls" style="position: absolute; top: 10px; left: 10px; z-index: 10;">
+                <div id="treeControls"
+                    style="position:absolute; top:10px; left:10px; z-index:1000; pointer-events:auto;">
                     <button id="zoomIn">Zoom In</button>
                     <button id="zoomOut">Zoom Out</button>
                     <button id="resetZoom">Reset</button>
@@ -518,7 +587,7 @@
                 document.getElementById("familyTree").innerHTML = '';
 
                 // Visualize the tree
-                new Treant(treeConfig, function() {
+                new Treant(treeConfig, function () {
                     // Initialize panzoom after the tree is loaded
                     initPanZoom();
                 });
@@ -585,7 +654,6 @@
                     levelSeparation: 50, // Increased separation to prevent overlap
                     siblingSeparation: 30,
                     subTeeSeparation: 50,
-                    scrollbar: "native",
                     connectors: {
                         type: "step"
                     },
@@ -618,28 +686,60 @@
 
         // Function to initialize panzoom
         function initPanZoom() {
-            const treeContainer = document.querySelector('#familyTree .Treant');
-            if (!treeContainer) return;
+            const viewport = document.getElementById('familyTree');
+            const stage = viewport.querySelector('.Treant'); // Treant renders this inside #familyTree
+            if (!stage) return;
 
-            // Initialize Panzoom
-            const panzoom = Panzoom(treeContainer, {
+            // Ensure the stage accepts touch gestures
+            stage.style.touchAction = 'none';
+
+            const panzoom = Panzoom(stage, {
                 maxScale: 5,
-                minScale: 0.5,
+                minScale: 0.4,
                 contain: 'outside',
-                cursor: 'move'
+                cursor: 'grab',
+                animate: true
             });
 
-            // Enable mouse wheel zooming
-            treeContainer.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+            // Drag-to-pan UX
+            stage.addEventListener('pointerdown', () => {
+                stage.style.cursor = 'grabbing';
+            });
+            stage.addEventListener('pointerup', () => {
+                stage.style.cursor = 'grab';
+            });
+            stage.addEventListener('pointercancel', () => {
+                stage.style.cursor = 'grab';
+            });
 
-            // Zoom controls (optional)
-            document.getElementById('zoomIn').addEventListener('click', panzoom.zoomIn);
-            document.getElementById('zoomOut').addEventListener('click', panzoom.zoomOut);
+            // Wheel zoom (desktop) — IMPORTANT: passive:false so we can prevent default
+            viewport.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                panzoom.zoomWithWheel(e);
+            }, { passive: false });
+
+            // Buttons
+            document.getElementById('zoomIn').addEventListener('click', () => panzoom.zoomIn());
+            document.getElementById('zoomOut').addEventListener('click', () => panzoom.zoomOut());
             document.getElementById('resetZoom').addEventListener('click', () => {
                 panzoom.zoomTo(1);
                 panzoom.pan(0, 0);
             });
+
+            // Optional: start slightly zoomed out and center the tree
+            requestAnimationFrame(() => {
+                try {
+                    panzoom.zoomTo(0.8);
+                    // Center by panning to put stage roughly in the middle of the viewport
+                    const vp = viewport.getBoundingClientRect();
+                    const st = stage.getBoundingClientRect();
+                    const dx = (vp.width - st.width) / 2;
+                    const dy = (vp.height - st.height) / 2;
+                    panzoom.pan(dx, dy);
+                } catch { }
+            });
         }
     </script>
 </body>
+
 </html>
