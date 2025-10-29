@@ -200,21 +200,19 @@
             width: 100%;
             height: 1000px;
             overflow: hidden;
-            /* Panzoom handles panning */
             border: 1px solid #ccc;
             margin: 0 auto;
             position: relative;
-            /* Allow the page to still scroll when dragging outside the stage */
             overscroll-behavior: contain;
-            /* Allow vertical page scroll if a gesture starts on empty space in the viewport */
             touch-action: pan-y;
         }
 
         .Treant {
             position: relative;
             transform-origin: 0 0;
-            /* Only the stage disables native touch so Panzoom can pinch/drag */
             touch-action: none;
+            will-change: transform;
+            /* smoother scaling */
         }
 
         .node {
@@ -693,18 +691,18 @@
             if (!stage) return;
 
             // Ensure correct touch behavior
-            stage.style.touchAction = 'none';     // pinch/drag on the stage
-            viewport.style.touchAction = 'pan-y'; // allow page vertical scroll if touch starts on viewport margins
+            stage.style.touchAction = 'none';
+            viewport.style.touchAction = 'pan-y';
 
             const panzoom = Panzoom(stage, {
-                maxScale: 5,
-                minScale: 0.4,
-                contain: 'none',   // allow free panning; 'outside' can clamp and feel "stuck"
+                maxScale: 6,     // allow more zoom-in if you want
+                minScale: 0.25,  // allow more zoom-out to see more at once
+                contain: 'none', // free panning; avoids "stuck" edges
                 cursor: 'grab',
                 animate: true
             });
 
-            // Wheel zoom on desktop: must be passive:false so we can prevent default scrolling
+            // Desktop wheel zoom — keep page from scrolling the whole doc while zooming
             viewport.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 panzoom.zoomWithWheel(e);
@@ -715,13 +713,42 @@
             stage.addEventListener('pointerup', () => stage.style.cursor = 'grab');
             stage.addEventListener('pointercancel', () => stage.style.cursor = 'grab');
 
-            // Buttons
-            document.getElementById('zoomIn').addEventListener('click', () => panzoom.zoomIn());
-            document.getElementById('zoomOut').addEventListener('click', () => panzoom.zoomOut());
-            document.getElementById('resetZoom').addEventListener('click', () => {
-                panzoom.zoomTo(1);
+            // ---- Zoom buttons that scale nodes + connectors around the viewport center ----
+            const ZOOM_STEP = 1.2; // 20% steps feel good
+
+            function zoomAroundCenter(targetScale) {
+                const rect = viewport.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+
+                // Clamp to min/max so we can’t over- or under-zoom
+                const min = panzoom.getOptions().minScale ?? 0.25;
+                const max = panzoom.getOptions().maxScale ?? 6;
+                const next = Math.max(min, Math.min(max, targetScale));
+
+                // Use focal to keep the center in place while zooming
+                panzoom.zoomTo(next, { animate: true, focal: { clientX: cx, clientY: cy } });
+            }
+
+            function zoomIn() {
+                const current = panzoom.getScale();
+                zoomAroundCenter(current * ZOOM_STEP);
+            }
+
+            function zoomOut() {
+                const current = panzoom.getScale();
+                zoomAroundCenter(current / ZOOM_STEP);
+            }
+
+            function resetZoom() {
+                // reset scale and pan
+                panzoom.zoomTo(1, { animate: true, focal: { clientX: 0, clientY: 0 } });
                 panzoom.pan(0, 0);
-            });
+            }
+
+            document.getElementById('zoomIn').addEventListener('click', zoomIn);
+            document.getElementById('zoomOut').addEventListener('click', zoomOut);
+            document.getElementById('resetZoom').addEventListener('click', resetZoom);
         }
     </script>
 </body>
