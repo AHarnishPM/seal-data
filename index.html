@@ -200,22 +200,21 @@
             width: 100%;
             height: 1000px;
             overflow: hidden;
-            /* keep this; Panzoom handles panning */
+            /* Panzoom handles panning */
             border: 1px solid #ccc;
             margin: 0 auto;
             position: relative;
-            /* IMPORTANT: allow normal page scroll unless user is inside the stage */
+            /* Allow the page to still scroll when dragging outside the stage */
             overscroll-behavior: contain;
+            /* Allow vertical page scroll if a gesture starts on empty space in the viewport */
+            touch-action: pan-y;
         }
 
         .Treant {
             position: relative;
             transform-origin: 0 0;
-            /* IMPORTANT: touch gestures for Panzoom (pinch/drag) */
+            /* Only the stage disables native touch so Panzoom can pinch/drag */
             touch-action: none;
-            /* <- moved here from #familyTree */
-            -ms-touch-action: none;
-            /* older Edge */
         }
 
         .node {
@@ -313,15 +312,16 @@
         <!-- Family Tree Section -->
         <div id="familyTreeSection">
             <h2>Family Tree</h2>
-            <div id="familyTree">
-                <!-- Panzoom controls (optional) -->
-                <div id="treeControls"
-                    style="position:absolute; top:10px; left:10px; z-index:1000; pointer-events:auto;">
-                    <button id="zoomIn">Zoom In</button>
-                    <button id="zoomOut">Zoom Out</button>
-                    <button id="resetZoom">Reset</button>
-                </div>
+
+            <!-- Controls as a sibling, not a child -->
+            <div id="treeControls" style="position: relative; z-index: 10; margin-bottom: 8px;">
+                <button id="zoomIn">Zoom In</button>
+                <button id="zoomOut">Zoom Out</button>
+                <button id="resetZoom">Reset</button>
             </div>
+
+            <!-- The viewport that will only contain the Treant stage -->
+            <div id="familyTree"></div>
         </div>
     </div>
 
@@ -584,7 +584,9 @@
                 const treeConfig = buildTreeConfig(members);
 
                 // Clear any previous tree
-                document.getElementById("familyTree").innerHTML = '';
+                const familyTree = document.getElementById("familyTree");
+                const oldStage = familyTree.querySelector(".Treant");
+                if (oldStage) oldStage.remove();
 
                 // Visualize the tree
                 new Treant(treeConfig, function () {
@@ -687,36 +689,31 @@
         // Function to initialize panzoom
         function initPanZoom() {
             const viewport = document.getElementById('familyTree');
-            const stage = viewport.querySelector('.Treant'); // Treant renders this inside #familyTree
+            const stage = viewport.querySelector('.Treant');
             if (!stage) return;
 
-            // Ensure the stage accepts touch gestures
-            stage.style.touchAction = 'none';
+            // Ensure correct touch behavior
+            stage.style.touchAction = 'none';     // pinch/drag on the stage
+            viewport.style.touchAction = 'pan-y'; // allow page vertical scroll if touch starts on viewport margins
 
             const panzoom = Panzoom(stage, {
                 maxScale: 5,
                 minScale: 0.4,
-                contain: 'outside',
+                contain: 'none',   // allow free panning; 'outside' can clamp and feel "stuck"
                 cursor: 'grab',
                 animate: true
             });
 
-            // Drag-to-pan UX
-            stage.addEventListener('pointerdown', () => {
-                stage.style.cursor = 'grabbing';
-            });
-            stage.addEventListener('pointerup', () => {
-                stage.style.cursor = 'grab';
-            });
-            stage.addEventListener('pointercancel', () => {
-                stage.style.cursor = 'grab';
-            });
-
-            // Wheel zoom (desktop) — IMPORTANT: passive:false so we can prevent default
+            // Wheel zoom on desktop: must be passive:false so we can prevent default scrolling
             viewport.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 panzoom.zoomWithWheel(e);
             }, { passive: false });
+
+            // Drag cursor feedback (optional)
+            stage.addEventListener('pointerdown', () => stage.style.cursor = 'grabbing');
+            stage.addEventListener('pointerup', () => stage.style.cursor = 'grab');
+            stage.addEventListener('pointercancel', () => stage.style.cursor = 'grab');
 
             // Buttons
             document.getElementById('zoomIn').addEventListener('click', () => panzoom.zoomIn());
@@ -724,19 +721,6 @@
             document.getElementById('resetZoom').addEventListener('click', () => {
                 panzoom.zoomTo(1);
                 panzoom.pan(0, 0);
-            });
-
-            // Optional: start slightly zoomed out and center the tree
-            requestAnimationFrame(() => {
-                try {
-                    panzoom.zoomTo(0.8);
-                    // Center by panning to put stage roughly in the middle of the viewport
-                    const vp = viewport.getBoundingClientRect();
-                    const st = stage.getBoundingClientRect();
-                    const dx = (vp.width - st.width) / 2;
-                    const dy = (vp.height - st.height) / 2;
-                    panzoom.pan(dx, dy);
-                } catch { }
             });
         }
     </script>
