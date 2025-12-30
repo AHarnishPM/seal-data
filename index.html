@@ -3,336 +3,220 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
-    <title>Seal and Serpent Lineage Tracking Form</title>
-    <!-- Include Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap">
-    <!-- Treant.js CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css">
-    <!-- Custom Styles -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seal and Serpent Lineage Tracker</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Your existing styles */
+        /* 
+           Using Custom colors to match the original design:
+           Background: #FFF9C4 (Light Yellow)
+           Headings: #F57F17 (Dark Gold)
+           Buttons/Nodes: #FBC02D (Medium Yellow)
+        */
+
         body {
-            font-family: 'Open Sans', Arial, sans-serif;
-            padding: 0;
-            margin: 0;
+            font-family: 'Open Sans', sans-serif;
             background-color: #FFF9C4;
-            /* Light yellow background */
+            /* Your original light yellow background */
+            color: #333;
         }
 
-        .container {
-            max-width: 1200px;
-            /* Increased max-width to make the container wider */
-            margin: 0 auto;
-            /* Center the container */
-            padding: 20px;
-            text-align: center;
-            /* Center-align text */
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #FFF9C4;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FBC02D;
+            border-radius: 4px;
         }
 
         h1 {
             color: #F57F17;
             /* Darker yellow/gold */
+            font-weight: 700;
         }
 
-        p {
-            color: #555;
-            /* Dark gray for readability */
-            font-size: 18px;
-            line-height: 1.6;
+        h2 {
+            color: #F57F17;
+            font-weight: 600;
         }
 
-        form {
-            margin-top: 30px;
-        }
-
-        input {
-            margin: 5px 0 15px 0;
-            padding: 10px;
-            width: 80%;
-            max-width: 400px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        input::placeholder {
-            color: #999;
-        }
-
-        button {
-            padding: 12px 25px;
-            margin-top: 20px;
-            cursor: pointer;
+        /* Button Styles */
+        .btn-gold {
             background-color: #FBC02D;
-            /* Medium yellow */
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            color: white;
+            transition: background-color 0.3s ease;
         }
 
-        button:hover {
+        .btn-gold:hover {
             background-color: #F9A825;
             /* Darker yellow on hover */
         }
 
-        .success {
-            color: green;
-            font-weight: bold;
+        /* Tree Container */
+        #tree-container {
+            background-color: #ffffff;
+            /* White background for the tree area */
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            height: 80vh;
+            width: 100%;
+            overflow: hidden;
+            /* Hide scrollbars, let D3 handle zoom/pan */
+            position: relative;
+            cursor: grab;
         }
 
-        .error {
-            color: red;
-            font-weight: bold;
+        #tree-container:active {
+            cursor: grabbing;
         }
 
-        /* Label Styles */
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #333;
-            font-size: 16px;
-            text-align: left;
-            width: 80%;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Leaderboard Styles */
-        #leaderboard {
-            margin-top: 50px;
-            text-align: center;
-        }
-
-        #leaderboard h2 {
-            color: #F57F17;
-        }
-
-        #leaderboard table {
-            margin: 0 auto;
-            border-collapse: collapse;
-            width: 80%;
-            max-width: 600px;
-            /* Increased max-width for the table */
-            font-size: 18px;
-        }
-
-        #leaderboard th,
-        #leaderboard td {
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
-
-        #leaderboard th {
-            background-color: #FBC02D;
-            color: #fff;
-        }
-
-        /* Styles for gold, silver, and bronze rows */
+        /* Leaderboard Colors */
         .gold {
-            background-color: #FFD700;
-            /* Gold color */
+            background-color: #FFD700 !important;
             color: #000;
         }
 
         .silver {
-            background-color: #C0C0C0;
-            /* Silver color */
+            background-color: #C0C0C0 !important;
             color: #000;
         }
 
         .bronze {
-            background-color: #CD7F32;
-            /* Bronze color */
-            color: #000;
-        }
-
-        @media (max-width: 600px) {
-            input {
-                width: 100%;
-            }
-
-            label {
-                width: 100%;
-            }
-
-            #leaderboard table {
-                width: 100%;
-            }
-
-            #familyTree {
-                width: 100%;
-            }
-        }
-
-        /* Add margin to separate the submitter's name field */
-        #submitterName {
-            margin-top: 10px;
-        }
-
-        /* Search Section Styles */
-        #searchSection {
-            margin-top: 50px;
-            text-align: center;
-        }
-
-        #searchSection h2 {
-            color: #F57F17;
-        }
-
-        #searchResult {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #333;
-        }
-
-        /* Family Tree Section Styles */
-        #familyTreeSection {
-            margin-top: 50px;
-            text-align: center;
-        }
-
-        #familyTree {
-            width: 100%;
-            height: 1000px;
-            overflow: hidden;
-            border: 1px solid #ccc;
-            margin: 0 auto;
-            position: relative;
-            overscroll-behavior: contain;
-            touch-action: pan-y;
-        }
-
-        .Treant {
-            position: relative;
-            transform-origin: 0 0;
-            touch-action: none;
-            will-change: transform;
-            /* smoother scaling */
-        }
-
-        .node {
-            text-align: center;
-            border: 1px solid #ccc;
-            padding: 5px;
-            border-radius: 5px;
-            background-color: #FBC02D;
-            color: #000;
-            min-width: 100px;
-            /* Ensure nodes have a minimum width */
-            min-height: 50px;
-            /* Ensure nodes have a minimum height */
-            max-width: 200px;
-            /* Optional: limit maximum width */
-            word-wrap: break-word;
-            /* Wrap long text */
-        }
-
-        .node-name {
-            font-weight: bold;
-            font-size: 14px;
-            /* Reduced font size */
-        }
-
-        .node-title {
-            font-size: 12px;
-            color: #555;
-        }
-
-        /* Style for bigs not listed as members */
-        .node-bigs-not-member {
-            background-color: #2196F3;
-            /* Blue background */
+            background-color: #CD7F32 !important;
             color: #fff;
+        }
+
+        /* Input styling */
+        input:focus {
+            outline: 2px solid #FBC02D;
+            border-color: #FBC02D;
+        }
+
+        /* Helper for the content boxes */
+        .content-box {
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Seal and Serpent Lineage Tracking Form</h1>
-        <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs of our
-            society over time to share with actives and alumni. With a black book from around every other year, we can
-            trace our entire lineage back to whenever we started keeping track.</p>
-        <p>Please enter information for any members whom you know or have a black book containing, following the
-            formatting outlined in grey inside the boxes.</p>
-        <p>Enter your name in the first box to count towards the leaderboard. Use full, legal first and last names for
-            all members and 4 digits for the year, as due to our age, we have members from 1927 and 2027.</p>
-        <p>Thank you for helping! If you have any questions, email me at <a
-                href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a></p>
-        <p>- Aaron Harnish, 2027</p>
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
 
-        <!-- Submitter's Name Field (Outside the Form) -->
-        <label for="submitterName">Your Name:</label><br>
-        <input type="text" id="submitterName" placeholder="Your Name (e.g., Edward Tinkham)" required><br>
+        <!-- Header -->
+        <header class="text-center mb-10 max-w-3xl mx-auto">
+            <h1 class="text-4xl md:text-5xl mb-6">Seal and Serpent Lineage Tracking Form</h1>
+            <div class="space-y-4 text-gray-700 text-lg">
+                <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs
+                    of our society over time to share with actives and alumni.</p>
+                <p>Please enter information for any members whom you know or have a black book containing, following the
+                    formatting outlined in grey inside the boxes.</p>
+                <p>Enter your name in the first box to count towards the leaderboard. Use full, legal first and last
+                    names for all members and 4 digits for the year.</p>
+                <p class="text-sm">Thank you for helping! Questions? Email <a href="mailto:ajh374@cornell.edu"
+                        class="text-blue-600 hover:underline">ajh374@cornell.edu</a></p>
+                <p class="font-bold">- Aaron Harnish, 2027</p>
+            </div>
+        </header>
 
-        <!-- Member Form -->
-        <form id="memberForm">
-            <label for="memberName">Member's Name:</label><br>
-            <input type="text" id="memberName" placeholder="Member's Name (e.g., Aaron Harnish)" required><br>
-            <label for="gradYear">Member Graduation Year:</label><br>
-            <input type="text" id="gradYear" placeholder="Member Graduation Year (e.g., 2027)" required><br>
-            <label for="bigName">Member's Big's Name:</label><br>
-            <input type="text" id="bigName" placeholder="Member's Big's Name (e.g., Cedric Orton-Urbina)" required><br>
-            <button type="button" id="addEntryButton">Add Entry</button>
-            <p id="message"></p>
-        </form>
-
-        <!-- Search Section -->
-        <div id="searchSection">
-            <h2>Search for a Member</h2>
-            <input type="text" id="searchName" placeholder="Enter Member's Name to Search">
-            <button type="button" id="searchButton">Search</button>
-            <div id="searchResult"></div>
+        <!-- Submitter Name (Global) -->
+        <div class="max-w-xl mx-auto mb-8">
+            <label for="submitterName" class="block text-gray-700 font-bold mb-2">Your Name (for Leaderboard):</label>
+            <input type="text" id="submitterName" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
+                placeholder="Your Name (e.g., Edward Tinkham)" required>
         </div>
 
-        <!-- Leaderboard Section -->
-        <div id="leaderboard">
-            <h2>Top Contributors</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Name</th>
-                        <th>Entries</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard-body">
-                    <!-- Leaderboard entries will be inserted here -->
-                </tbody>
-            </table>
-        </div>
+        <!-- Add Entry Box -->
+        <!-- Constrained to max-w-xl so it doesn't stretch across the screen -->
+        <section class="content-box max-w-xl mx-auto">
+            <h2 class="text-3xl text-center mb-6">Add New Entry</h2>
+            <form id="memberForm" class="space-y-4">
+                <div>
+                    <label for="memberName" class="block text-gray-700 font-bold mb-1">Member's Name:</label>
+                    <input type="text" id="memberName" class="w-full p-3 border border-gray-300 rounded-lg"
+                        placeholder="Member's Name (e.g., Aaron Harnish)" required>
+                </div>
+                <div>
+                    <label for="gradYear" class="block text-gray-700 font-bold mb-1">Graduation Year:</label>
+                    <input type="text" id="gradYear" class="w-full p-3 border border-gray-300 rounded-lg"
+                        placeholder="YYYY (e.g., 2027)" required>
+                </div>
+                <div>
+                    <label for="bigName" class="block text-gray-700 font-bold mb-1">Member's Big's Name:</label>
+                    <input type="text" id="bigName" class="w-full p-3 border border-gray-300 rounded-lg"
+                        placeholder="Big's Name (e.g., Cedric Orton-Urbina)" required>
+                </div>
+
+                <button type="button" id="addEntryButton"
+                    class="btn-gold w-full py-3 px-4 rounded-lg font-bold text-lg mt-4 shadow-md">Add Entry</button>
+                <p id="message" class="text-center font-bold mt-2"></p>
+            </form>
+        </section>
+
+        <!-- Search Box -->
+        <section id="searchSection" class="content-box max-w-xl mx-auto">
+            <h2 class="text-2xl text-center mb-4">Search for a Member</h2>
+            <div class="space-y-4">
+                <input type="text" id="searchName" class="w-full p-3 border border-gray-300 rounded-lg"
+                    placeholder="Enter Name to Search">
+                <button type="button" id="searchButton"
+                    class="btn-gold w-full py-3 px-4 rounded-lg font-bold shadow-md">Search</button>
+                <div id="searchResult" class="mt-4 text-left"></div>
+            </div>
+        </section>
+
+        <!-- Leaderboard Box -->
+        <section id="leaderboard" class="content-box max-w-3xl mx-auto">
+            <h2 class="text-3xl text-center mb-6">Top Contributors</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-[#FBC02D] text-white">
+                            <th class="p-3 border border-gray-200">Rank</th>
+                            <th class="p-3 border border-gray-200">Name</th>
+                            <th class="p-3 border border-gray-200">Entries</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body" class="text-lg">
+                        <!-- Entries inserted via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         <!-- Family Tree Section -->
-        <div id="familyTreeSection">
-            <h2>Family Tree</h2>
-
-            <!-- Controls as a sibling, not a child -->
-            <div id="treeControls" style="position: relative; z-index: 10; margin-bottom: 8px;">
-                <button id="zoomIn">Zoom In</button>
-                <button id="zoomOut">Zoom Out</button>
-                <button id="resetZoom">Reset</button>
+        <!-- This section is allowed to be wider (max-w-7xl) so the tree has room -->
+        <section id="familyTreeSection" class="content-box w-full mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                <h2 class="text-3xl text-center md:text-left">Family Tree</h2>
+                <div class="text-sm text-gray-500 mt-2 md:mt-0">
+                    Scroll to Zoom • Drag to Pan
+                </div>
             </div>
 
-            <!-- The viewport that will only contain the Treant stage -->
-            <div id="familyTree"></div>
-        </div>
+            <div id="tree-container"></div>
+        </section>
     </div>
 
-    <!-- Include Raphael.js before Treant.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
-    <!-- Include Treant.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
-    <!-- Include Panzoom.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.1/dist/panzoom.min.js"></script>
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://unpkg.com/d3-flextree@2.1.2/dist/d3-flextree.js"></script>
 
-    <!-- Firebase SDK and Your JavaScript Code -->
+    <!-- Firebase SDK & Logic -->
     <script type="module">
-        // Firebase Configuration
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import {
             getFirestore,
@@ -344,10 +228,11 @@
             orderBy,
             startAt,
             endAt,
+            limit,
         } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
+            apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w", // <--- REPLACE WITH YOUR REAL API KEY
             authDomain: "seal-data-collection.firebaseapp.com",
             projectId: "seal-data-collection",
             storageBucket: "seal-data-collection.appspot.com",
@@ -356,28 +241,22 @@
             measurementId: "G-BMCBQ5S8QV"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Attach event listeners after the DOM is fully loaded
+        // --- Init ---
         document.addEventListener("DOMContentLoaded", () => {
-            // Retrieve and set the submitter's name from local storage if available
             const savedName = localStorage.getItem('submitterName');
-            if (savedName) {
-                document.getElementById("submitterName").value = savedName;
-            } else {
-                // Set default placeholder name
-                document.getElementById("submitterName").placeholder = "Your Name (e.g., Aaron Harnish)";
-            }
+            if (savedName) document.getElementById("submitterName").value = savedName;
+
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
-            // Load the leaderboard
+
             loadLeaderboard();
-            // Load the family tree
             loadFamilyTree();
         });
 
+        // --- Actions ---
         async function addEntry() {
             const memberName = document.getElementById("memberName").value.trim();
             const bigName = document.getElementById("bigName").value.trim();
@@ -385,370 +264,219 @@
             const submitterName = document.getElementById("submitterName").value.trim();
             const message = document.getElementById("message");
 
-            // Ensure all required fields are filled
             if (!memberName || !bigName || !gradYear || !submitterName) {
                 message.textContent = "All fields are required.";
-                message.className = "error";
+                message.className = "text-red-600";
                 return;
             }
 
-            // Validate that gradYear is a 4-digit number
-            const gradYearPattern = /^\d{4}$/;
-            if (!gradYearPattern.test(gradYear)) {
-                message.textContent = "Graduation year must be a 4-digit number.";
-                message.className = "error";
+            if (!/^\d{4}$/.test(gradYear)) {
+                message.textContent = "Graduation year must be 4 digits.";
+                message.className = "text-red-600";
                 return;
             }
 
-            // Update name validation regex to allow letters, spaces, hyphens, and apostrophes
             const namePattern = /^[a-zA-Z\s'-]+$/;
-            if (
-                !namePattern.test(memberName) ||
-                !namePattern.test(bigName) ||
-                !namePattern.test(submitterName)
-            ) {
-                message.textContent = "Names can only contain letters, spaces, hyphens, and apostrophes.";
-                message.className = "error";
+            if (!namePattern.test(memberName) || !namePattern.test(bigName) || !namePattern.test(submitterName)) {
+                message.textContent = "Names can only contain letters, spaces, hyphens.";
+                message.className = "text-red-600";
                 return;
             }
 
-            // Save submitter's name to local storage
             localStorage.setItem('submitterName', submitterName);
 
             try {
-                // Check for duplicates (ignore gradYear)
-                const q = query(
-                    collection(db, "mentorship"),
-                    where("memberName", "==", memberName)
-                );
-                const querySnapshot = await getDocs(q);
+                const q = query(collection(db, "mentorship"), where("memberName", "==", memberName));
+                const snap = await getDocs(q);
 
-                if (!querySnapshot.empty) {
-                    // Duplicate found
-                    message.textContent = "This member already exists.";
-                    message.className = "error";
+                if (!snap.empty) {
+                    message.textContent = "Member already exists.";
+                    message.className = "text-red-600";
                     return;
                 }
 
-                // Add entry to Firestore
                 await addDoc(collection(db, "mentorship"), {
-                    memberName,
-                    gradYear,
-                    bigName,
-                    submittedBy: submitterName,
-                    timestamp: new Date()
+                    memberName, gradYear, bigName, submittedBy: submitterName, timestamp: new Date()
                 });
 
-                message.textContent = "Entry added successfully!";
-                message.className = "success";
-
-                // Reset the form but not the submitter's name
+                message.textContent = "Entry added!";
+                message.className = "text-green-600";
                 document.getElementById("memberForm").reset();
-
-                // Reload the leaderboard to reflect the new entry
                 loadLeaderboard();
-                // Reload the family tree
                 loadFamilyTree();
 
             } catch (error) {
-                console.error("Error adding document:", error);
-                message.textContent = "Failed to add entry.";
-                message.className = "error";
+                console.error(error);
+                message.textContent = "Error adding entry.";
+                message.className = "text-red-600";
             }
         }
 
         async function loadLeaderboard() {
-            const leaderboardBody = document.getElementById("leaderboard-body");
-            leaderboardBody.innerHTML = ""; // Clear existing entries
-
+            const tbody = document.getElementById("leaderboard-body");
+            tbody.innerHTML = "";
             try {
-                // Fetch all entries from Firestore
-                const entriesSnapshot = await getDocs(collection(db, "mentorship"));
-
-                const submitterCounts = {};
-
-                // Count entries per submitter
-                entriesSnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const submitter = data.submittedBy || "Anonymous";
-
-                    if (submitterCounts[submitter]) {
-                        submitterCounts[submitter]++;
-                    } else {
-                        submitterCounts[submitter] = 1;
-                    }
+                const snap = await getDocs(collection(db, "mentorship"));
+                const counts = {};
+                snap.forEach(d => {
+                    const s = d.data().submittedBy || "Anonymous";
+                    counts[s] = (counts[s] || 0) + 1;
                 });
 
-                // Convert counts to an array and sort in descending order
-                const sortedSubmitters = Object.entries(submitterCounts)
-                    .sort((a, b) => b[1] - a[1]) // Sort by count descending
-                    .slice(0, 7); // Get top 7
+                const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 7);
 
-                // Build the leaderboard rows
-                sortedSubmitters.forEach((entry, index) => {
-                    const [name, count] = entry;
-                    const row = document.createElement("tr");
+                sorted.forEach((item, idx) => {
+                    const tr = document.createElement("tr");
+                    tr.className = "border-b border-gray-200";
+                    if (idx === 0) tr.classList.add("gold");
+                    else if (idx === 1) tr.classList.add("silver");
+                    else if (idx === 2) tr.classList.add("bronze");
+                    else tr.classList.add("bg-white");
 
-                    const rankCell = document.createElement("td");
-                    rankCell.textContent = index + 1;
-
-                    const nameCell = document.createElement("td");
-                    nameCell.textContent = name;
-
-                    const countCell = document.createElement("td");
-                    countCell.textContent = count;
-
-                    row.appendChild(rankCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(countCell);
-
-                    // Add class to row based on rank
-                    if (index === 0) {
-                        row.classList.add("gold");
-                    } else if (index === 1) {
-                        row.classList.add("silver");
-                    } else if (index === 2) {
-                        row.classList.add("bronze");
-                    }
-                    // For ranks 4 to 7, no additional class (white background)
-
-                    leaderboardBody.appendChild(row);
+                    tr.innerHTML = `
+                        <td class="p-3 border-r border-gray-200">${idx + 1}</td>
+                        <td class="p-3 border-r border-gray-200">${item[0]}</td>
+                        <td class="p-3">${item[1]}</td>
+                    `;
+                    tbody.appendChild(tr);
                 });
-
-            } catch (error) {
-                console.error("Error loading leaderboard:", error);
-            }
+            } catch (e) { console.error(e); }
         }
 
         async function searchMember() {
-            const searchName = document.getElementById("searchName").value.trim();
-            const searchResult = document.getElementById("searchResult");
+            const val = document.getElementById("searchName").value.trim();
+            const res = document.getElementById("searchResult");
+            res.innerHTML = "";
+            if (!val) return;
 
-            if (!searchName) {
-                searchResult.textContent = "Please enter a member's name to search.";
+            try {
+                const q = query(collection(db, "mentorship"), orderBy("memberName"), startAt(val), endAt(val + '\uf8ff'), limit(10));
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    res.innerHTML = "<p class='text-red-600'>Not found.</p>";
+                } else {
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        res.innerHTML += `
+                            <div class="p-3 bg-gray-50 border border-gray-200 rounded mb-2">
+                                <p><strong>Name:</strong> ${d.memberName}</p>
+                                <p><strong>Class:</strong> ${d.gradYear}</p>
+                                <p><strong>Big:</strong> ${d.bigName}</p>
+                                <p class="text-sm text-gray-500 mt-1">By: ${d.submittedBy}</p>
+                            </div>`;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- Tree Visualization ---
+        async function loadFamilyTree() {
+            const container = document.getElementById("tree-container");
+            container.innerHTML = "";
+
+            const snap = await getDocs(collection(db, "mentorship"));
+            const raw = [];
+            snap.forEach(d => raw.push(d.data()));
+
+            const data = buildData(raw);
+            if (!data) {
+                container.innerHTML = "<div class='flex items-center justify-center h-full text-gray-500'>No data yet.</div>";
                 return;
             }
-
-            try {
-                // Perform partial match search (case-sensitive)
-                const q = query(
-                    collection(db, "mentorship"),
-                    orderBy("memberName"),
-                    startAt(searchName),
-                    endAt(searchName + '\uf8ff')
-                );
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    searchResult.textContent = "Member not found.";
-                } else {
-                    searchResult.innerHTML = "";
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const resultDiv = document.createElement("div");
-                        resultDiv.innerHTML = `
-                            <p><strong>Member Name:</strong> ${data.memberName}</p>
-                            <p><strong>Graduation Year:</strong> ${data.gradYear}</p>
-                            <p><strong>Big's Name:</strong> ${data.bigName}</p>
-                            <p><strong>Submitted By:</strong> ${data.submittedBy}</p>
-                        `;
-                        searchResult.appendChild(resultDiv);
-                    });
-                }
-            } catch (error) {
-                console.error("Error searching for member:", error);
-                searchResult.textContent = "An error occurred while searching.";
-            }
+            renderTree(data, container);
         }
 
-        // Function to load the family tree
-        async function loadFamilyTree() {
-            try {
-                // Fetch all entries from Firestore
-                const entriesSnapshot = await getDocs(collection(db, "mentorship"));
-                const members = [];
+        function buildData(members) {
+            const map = new Map();
+            members.forEach(m => map.set(m.memberName, {
+                id: m.memberName, name: m.memberName, year: m.gradYear, big: m.bigName, children: []
+            }));
 
-                // Build an array of member objects
-                entriesSnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    members.push({
-                        memberName: data.memberName,
-                        bigName: data.bigName,
-                        gradYear: data.gradYear,
-                    });
-                });
+            const roots = new Map(map);
 
-                // Build the tree data
-                const treeConfig = buildTreeConfig(members);
-
-                // Clear any previous tree
-                const familyTree = document.getElementById("familyTree");
-                const oldStage = familyTree.querySelector(".Treant");
-                if (oldStage) oldStage.remove();
-
-                // Visualize the tree
-                new Treant(treeConfig, function () {
-                    // Initialize panzoom after the tree is loaded
-                    initPanZoom();
-                });
-
-            } catch (error) {
-                console.error("Error loading family tree:", error);
-            }
-        }
-
-        // Function to build tree config for Treant.js
-        function buildTreeConfig(members) {
-            const memberMap = {};
-            const nodes = {};
-            const roots = [];
-
-            // Create node configs for all members
-            members.forEach(member => {
-                memberMap[member.memberName] = member;
-                nodes[member.memberName] = {
-                    text: {
-                        name: member.memberName,
-                        title: "Grad Year: " + member.gradYear
-                    },
-                    HTMLclass: 'node',
-                    children: []
-                };
-            });
-
-            // Build the tree by linking nodes
-            members.forEach(member => {
-                const node = nodes[member.memberName];
-                if (member.bigName) {
-                    if (nodes[member.bigName]) {
-                        // Big is a listed member
-                        nodes[member.bigName].children.push(node);
+            map.forEach(node => {
+                if (node.big) {
+                    const bigNode = map.get(node.big);
+                    if (bigNode) {
+                        bigNode.children.push(node);
+                        roots.delete(node.id);
                     } else {
-                        // Big is not a listed member
-                        // Create a node for the big with a different style
-                        nodes[member.bigName] = {
-                            text: {
-                                name: member.bigName,
-                                title: "Big (Not Listed)"
-                            },
-                            HTMLclass: 'node node-bigs-not-member',
-                            children: [node]
-                        };
-                        // Add to roots since the big has no parent
-                        roots.push(nodes[member.bigName]);
+                        // Dummy big
+                        const dummy = { id: node.big, name: node.big, year: 'N/A', big: null, children: [node], isDummy: true };
+                        map.set(dummy.id, dummy);
+                        roots.set(dummy.id, dummy);
+                        roots.delete(node.id);
                     }
-                } else {
-                    // No big specified, add to roots
-                    roots.push(node);
                 }
             });
 
-            // Remove duplicates from roots array
-            const uniqueRoots = [...new Set(roots)];
-
-            // If there's only one root, use it; otherwise, create a dummy root
-            const chartConfig = {
-                chart: {
-                    container: "#familyTree",
-                    rootOrientation: "NORTH", // Vertical orientation
-                    levelSeparation: 50, // Increased separation to prevent overlap
-                    siblingSeparation: 30,
-                    subTeeSeparation: 50,
-                    connectors: {
-                        type: "step"
-                    },
-                    node: {
-                        HTMLclass: "node",
-                        collapsable: true
-                    },
-                    animation: {
-                        nodeAnimation: "easeOutBounce",
-                        nodeSpeed: 700,
-                        connectorsAnimation: "bounce",
-                        connectorsSpeed: 700
-                    }
-                },
-                nodeStructure: {}
-            };
-
-            if (uniqueRoots.length === 1) {
-                chartConfig.nodeStructure = uniqueRoots[0];
-            } else {
-                chartConfig.nodeStructure = {
-                    text: { name: "Root" },
-                    children: uniqueRoots,
-                    HTMLclass: 'node'
-                };
-            }
-
-            return chartConfig;
+            const finalRoots = Array.from(roots.values());
+            if (finalRoots.length === 0) return null;
+            if (finalRoots.length === 1) return finalRoots[0];
+            return { id: "Root", name: "Society", year: "", children: finalRoots, isRoot: true };
         }
 
-        // Function to initialize panzoom
-        function initPanZoom() {
-            const viewport = document.getElementById('familyTree');
-            const stage = viewport.querySelector('.Treant');
-            if (!stage) return;
+        function renderTree(data, container) {
+            if (!d3 || !d3.flextree) return;
 
-            // Ensure correct touch behavior
-            stage.style.touchAction = 'none';
-            viewport.style.touchAction = 'pan-y';
+            const w = container.clientWidth;
+            const h = container.clientHeight;
 
-            const panzoom = Panzoom(stage, {
-                maxScale: 6,     // allow more zoom-in if you want
-                minScale: 0.25,  // allow more zoom-out to see more at once
-                contain: 'none', // free panning; avoids "stuck" edges
-                cursor: 'grab',
-                animate: true
+            const svg = d3.select(container).append("svg").attr("width", w).attr("height", h);
+            const g = svg.append("g");
+
+            const layout = d3.flextree().nodeSize(d => [120, 200]).spacing((a, b) => a.path(b).length * 15);
+            const root = d3.hierarchy(data);
+            layout(root);
+
+            // Calculate bounding box to center
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            root.each(d => {
+                if (!d.data.isRoot) {
+                    minX = Math.min(minX, d.x - 80);
+                    maxX = Math.max(maxX, d.x + 80);
+                    minY = Math.min(minY, d.y - 40);
+                    maxY = Math.max(maxY, d.y + 40);
+                }
             });
 
-            // Desktop wheel zoom — keep page from scrolling the whole doc while zooming
-            viewport.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                panzoom.zoomWithWheel(e);
-            }, { passive: false });
+            const treeW = maxX - minX;
+            const treeH = maxY - minY;
+            const scale = Math.min(w / treeW, h / treeH, 1) * 0.9;
+            const tx = (w - (minX + maxX) * scale) / 2 + (minX + maxX) * scale / 2 - (minX + maxX) / 2 * scale;
+            // Simplified centering logic:
+            const centerX = w / 2 - (minX + maxX) / 2 * scale;
+            const centerY = h / 2 - (minY + maxY) / 2 * scale;
 
-            // Drag cursor feedback (optional)
-            stage.addEventListener('pointerdown', () => stage.style.cursor = 'grabbing');
-            stage.addEventListener('pointerup', () => stage.style.cursor = 'grab');
-            stage.addEventListener('pointercancel', () => stage.style.cursor = 'grab');
+            const zoom = d3.zoom().scaleExtent([0.1, 4]).on("zoom", e => g.attr("transform", e.transform));
+            svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(centerX, centerY).scale(scale));
 
-            // ---- Zoom buttons that scale nodes + connectors around the viewport center ----
-            const ZOOM_STEP = 1.2; // 20% steps feel good
+            // Links
+            g.selectAll(".link").data(root.links()).enter().append("path")
+                .attr("fill", "none").attr("stroke", "#999").attr("stroke-width", 2)
+                .attr("d", d3.linkVertical().x(d => d.x).y(d => d.y));
 
-            function zoomAroundCenter(targetScale) {
-                const rect = viewport.getBoundingClientRect();
-                const cx = rect.left + rect.width / 2;
-                const cy = rect.top + rect.height / 2;
+            // Nodes
+            const nodes = g.selectAll(".node").data(root.descendants().filter(d => !d.data.isRoot))
+                .enter().append("g")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
 
-                // Clamp to min/max so we can’t over- or under-zoom
-                const min = panzoom.getOptions().minScale ?? 0.25;
-                const max = panzoom.getOptions().maxScale ?? 6;
-                const next = Math.max(min, Math.min(max, targetScale));
+            nodes.append("rect")
+                .attr("x", -75).attr("y", -35).attr("width", 150).attr("height", 70)
+                .attr("rx", 6).attr("ry", 6)
+                .attr("fill", d => d.data.isDummy ? "#4299E1" : "#FBC02D") // Blue for missing bigs, Yellow for members
+                .attr("stroke", "#333").attr("stroke-width", 1)
+                .attr("class", "shadow");
 
-                // Use focal to keep the center in place while zooming
-                panzoom.zoomTo(next, { animate: true, focal: { clientX: cx, clientY: cy } });
-            }
+            nodes.append("text").text(d => d.data.name)
+                .attr("dy", "-0.2em").attr("text-anchor", "middle")
+                .attr("font-weight", "bold").attr("font-size", "14px")
+                .attr("fill", d => d.data.isDummy ? "#fff" : "#000");
 
-            function zoomIn() {
-                const current = panzoom.getScale();
-                zoomAroundCenter(current * ZOOM_STEP);
-            }
-
-            function zoomOut() {
-                const current = panzoom.getScale();
-                zoomAroundCenter(current / ZOOM_STEP);
-            }
-
-            function resetZoom() {
-                // reset scale and pan
-                panzoom.zoomTo(1, { animate: true, focal: { clientX: 0, clientY: 0 } });
-                panzoom.pan(0, 0);
-            }
-
-            document.getElementById('zoomIn').addEventListener('click', zoomIn);
-            document.getElementById('zoomOut').addEventListener('click', zoomOut);
-            document.getElementById('resetZoom').addEventListener('click', resetZoom);
+            nodes.append("text").text(d => d.data.year === 'N/A' ? 'Unlisted Big' : d.data.year)
+                .attr("dy", "1.2em").attr("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .attr("fill", d => d.data.isDummy ? "#eee" : "#333");
         }
     </script>
 </body>
