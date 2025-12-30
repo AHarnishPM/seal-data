@@ -375,21 +375,32 @@
             } catch (e) { console.error("[Lineage App] Leaderboard Error:", e); }
         }
 
-        // 3. SEARCH (Updated with Zoom Button)
+        // 3. SEARCH (Updated: Case-Insensitive + "Contains" match)
         async function searchMember() {
-            const val = document.getElementById("searchName").value.trim();
+            const val = document.getElementById("searchName").value.trim().toLowerCase(); // Convert input to lowercase
             const res = document.getElementById("searchResult");
             res.innerHTML = "";
+
             if (!val) return;
 
+            // Use the cachedMembers array that was populated when the tree loaded
+            if (cachedMembers.length === 0) {
+                res.innerHTML = "<p class='text-gray-500'>Data is still loading, please wait...</p>";
+                return;
+            }
+
             try {
-                const q = query(collection(db, "mentorship"), orderBy("memberName"), startAt(val), endAt(val + '\uf8ff'), limit(10));
-                const snap = await getDocs(q);
-                if (snap.empty) {
+                // Filter the local data instead of querying Firestore
+                // This checks if the member name (converted to lowercase) INCLUDES the search term
+                const results = cachedMembers.filter(d =>
+                    d.memberName.toLowerCase().includes(val)
+                );
+
+                if (results.length === 0) {
                     res.innerHTML = "<p class='text-red-600'>Not found.</p>";
                 } else {
-                    snap.forEach(doc => {
-                        const d = doc.data();
+                    // Limit to top 10 results to keep UI clean
+                    results.slice(0, 10).forEach(d => {
 
                         // Create card element
                         const card = document.createElement('div');
