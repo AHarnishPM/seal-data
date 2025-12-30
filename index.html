@@ -71,8 +71,8 @@
             overflow: hidden;
             position: relative;
             cursor: grab;
-            /* Prevents page scrolling when dragging the tree on mobile */
             touch-action: none;
+            /* Prevents page scrolling on mobile while dragging tree */
         }
 
         #tree-container:active {
@@ -138,7 +138,7 @@
                 placeholder="Your Name (e.g., Edward Tinkham)" required>
         </div>
 
-        <!-- Add Entry Form (Constrained Width) -->
+        <!-- Add Entry Form -->
         <section class="content-box max-w-xl mx-auto">
             <h2 class="text-3xl text-center mb-6">Add New Entry</h2>
             <form id="memberForm" class="space-y-4">
@@ -164,7 +164,21 @@
             </form>
         </section>
 
-        <!-- Search Box (Constrained Width) -->
+        <!-- Family Tree Section (Moved UP) -->
+        <section id="familyTreeSection" class="content-box w-full mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                <h2 class="text-3xl text-center md:text-left">Family Tree</h2>
+                <div class="text-sm text-gray-500 mt-2 md:mt-0">
+                    Scroll to Zoom • Drag to Pan
+                </div>
+            </div>
+
+            <div id="tree-container" class="flex items-center justify-center">
+                <span class="text-gray-400">Loading Tree...</span>
+            </div>
+        </section>
+
+        <!-- Search Box (Moved DOWN) -->
         <section id="searchSection" class="content-box max-w-xl mx-auto">
             <h2 class="text-2xl text-center mb-4">Search for a Member</h2>
             <div class="space-y-4">
@@ -172,11 +186,11 @@
                     placeholder="Enter Name to Search">
                 <button type="button" id="searchButton"
                     class="btn-gold w-full py-3 px-4 rounded-lg font-bold shadow-md">Search</button>
-                <div id="searchResult" class="mt-4 text-left"></div>
+                <div id="searchResult" class="mt-4 text-left space-y-3"></div>
             </div>
         </section>
 
-        <!-- Leaderboard (Constrained Width) -->
+        <!-- Leaderboard (Moved DOWN) -->
         <section id="leaderboard" class="content-box max-w-3xl mx-auto">
             <h2 class="text-3xl text-center mb-6">Top Contributors</h2>
             <div class="overflow-x-auto">
@@ -194,23 +208,9 @@
                 </table>
             </div>
         </section>
-
-        <!-- Family Tree Section (Full Width) -->
-        <section id="familyTreeSection" class="content-box w-full mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-                <h2 class="text-3xl text-center md:text-left">Family Tree</h2>
-                <div class="text-sm text-gray-500 mt-2 md:mt-0">
-                    Scroll to Zoom • Drag to Pan
-                </div>
-            </div>
-
-            <div id="tree-container" class="flex items-center justify-center">
-                <span class="text-gray-400">Loading Tree...</span>
-            </div>
-        </section>
     </div>
 
-    <!-- D3.js Library (Standard Version) -->
+    <!-- D3.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 
     <!-- Firebase SDK & Logic -->
@@ -231,7 +231,7 @@
 
         // --- CONFIGURATION ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w", // <--- REPLACE THIS
+            apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w", // <--- REPLACE THIS WITH YOUR API KEY
             authDomain: "seal-data-collection.firebaseapp.com",
             projectId: "seal-data-collection",
             storageBucket: "seal-data-collection.appspot.com",
@@ -242,6 +242,10 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // Global variables for D3 zoom control
+        let globalSvg = null;
+        let globalZoom = null;
 
         // --- MAIN LOGIC ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -350,7 +354,7 @@
             } catch (e) { console.error("[Lineage App] Leaderboard Error:", e); }
         }
 
-        // 3. SEARCH
+        // 3. SEARCH (Updated with Zoom Button)
         async function searchMember() {
             const val = document.getElementById("searchName").value.trim();
             const res = document.getElementById("searchResult");
@@ -365,26 +369,92 @@
                 } else {
                     snap.forEach(doc => {
                         const d = doc.data();
-                        res.innerHTML += `
-                            <div class="p-3 bg-gray-50 border border-gray-200 rounded mb-2">
-                                <p><strong>Name:</strong> ${d.memberName}</p>
-                                <p><strong>Class:</strong> ${d.gradYear}</p>
-                                <p><strong>Big:</strong> ${d.bigName}</p>
-                                <p class="text-sm text-gray-500 mt-1">By: ${d.submittedBy}</p>
-                            </div>`;
+
+                        // Create card element
+                        const card = document.createElement('div');
+                        card.className = "p-3 bg-gray-50 border border-gray-200 rounded shadow-sm";
+
+                        // Text Info
+                        card.innerHTML = `
+                            <p><strong>Name:</strong> ${d.memberName}</p>
+                            <p><strong>Class:</strong> ${d.gradYear}</p>
+                            <p><strong>Big:</strong> ${d.bigName}</p>
+                            <p class="text-sm text-gray-500 mt-1">By: ${d.submittedBy}</p>
+                        `;
+
+                        // "Locate in Tree" Button
+                        const locateBtn = document.createElement('button');
+                        locateBtn.textContent = "Locate in Tree";
+                        locateBtn.className = "mt-2 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition";
+                        locateBtn.onclick = () => zoomToMember(d.memberName);
+
+                        card.appendChild(locateBtn);
+                        res.appendChild(card);
                     });
                 }
             } catch (e) { console.error("[Lineage App] Search Error:", e); }
         }
 
-        // 4. FAMILY TREE (Using Standard D3 Tree)
+        // 4. ZOOM TO MEMBER LOGIC
+        function zoomToMember(name) {
+            if (!globalSvg || !globalZoom) {
+                alert("Tree not loaded yet.");
+                return;
+            }
+
+            // Find the node datum matching the name
+            // We select all groups with class 'node' and filter data
+            let targetNode = null;
+            d3.selectAll(".node").each(function (d) {
+                if (d.data.name === name) {
+                    targetNode = d;
+                }
+            });
+
+            if (targetNode) {
+                const container = document.getElementById("tree-container");
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+
+                // Zoom Level 2x
+                const scale = 2;
+                // Center calculations
+                // The transform translates to center (w/2, h/2), then subtracts the scaled node position
+                const tx = (w / 2) - (targetNode.x * scale);
+                const ty = (h / 2) - (targetNode.y * scale);
+
+                // Animate the transition
+                globalSvg.transition()
+                    .duration(1000)
+                    .call(globalZoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+
+                // Optional: Highlight the node visually temporarily
+                d3.selectAll(".node rect")
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 1); // Reset others
+
+                d3.selectAll(".node").filter(d => d.data.name === name).select("rect")
+                    .transition().duration(500)
+                    .attr("stroke", "#EF4444") // Tailwind Red-500
+                    .attr("stroke-width", 4)
+                    .transition().delay(2000).duration(500)
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 1);
+
+                // Scroll page to tree section
+                document.getElementById("familyTreeSection").scrollIntoView({ behavior: 'smooth' });
+
+            } else {
+                alert(`Member "${name}" found in search but not visible in the current tree structure.`);
+            }
+        }
+
+        // 5. FAMILY TREE
         async function loadFamilyTree() {
             const container = document.getElementById("tree-container");
 
             try {
                 const snap = await getDocs(collection(db, "mentorship"));
-                console.log(`[Lineage App] Fetched ${snap.size} members from DB.`);
-
                 if (snap.empty) {
                     container.innerHTML = "<div class='text-gray-500 p-10'>No members found in database yet. Add one!</div>";
                     return;
@@ -392,12 +462,8 @@
 
                 const raw = [];
                 snap.forEach(d => raw.push(d.data()));
-
                 const data = buildData(raw);
-
-                // Clear loading message
                 container.innerHTML = "";
-
                 renderTree(data, container);
 
             } catch (error) {
@@ -406,17 +472,12 @@
             }
         }
 
-        // Convert flat list to Hierarchy
         function buildData(members) {
             const map = new Map();
-            // Create nodes
             members.forEach(m => map.set(m.memberName, {
                 id: m.memberName, name: m.memberName, year: m.gradYear, big: m.bigName, children: []
             }));
-
             const roots = new Map(map);
-
-            // Link parent/child
             map.forEach(node => {
                 if (node.big) {
                     const bigNode = map.get(node.big);
@@ -424,55 +485,38 @@
                         bigNode.children.push(node);
                         roots.delete(node.id);
                     } else {
-                        // Create dummy big if missing
-                        // We must check if this dummy was already created by another sibling
                         if (map.has(node.big)) {
-                            // Dummy already exists (created by a sibling), push to its children
                             map.get(node.big).children.push(node);
                         } else {
-                            const dummy = {
-                                id: node.big, name: node.big, year: 'N/A',
-                                big: null, children: [node], isDummy: true
-                            };
+                            const dummy = { id: node.big, name: node.big, year: 'N/A', big: null, children: [node], isDummy: true };
                             map.set(dummy.id, dummy);
-                            roots.set(dummy.id, dummy); // Dummy is a root initially
+                            roots.set(dummy.id, dummy);
                         }
                         roots.delete(node.id);
                     }
                 }
             });
-
             const finalRoots = Array.from(roots.values());
-
-            // If we have multiple disconnected trees, create a "Super Root"
-            if (finalRoots.length === 1) {
-                return finalRoots[0];
-            } else {
-                return { id: "Root", name: "Society", year: "", children: finalRoots, isRoot: true };
-            }
+            if (finalRoots.length === 1) return finalRoots[0];
+            return { id: "Root", name: "Society", year: "", children: finalRoots, isRoot: true };
         }
 
-        // Render with D3
         function renderTree(data, container) {
             const w = container.clientWidth;
             const h = container.clientHeight;
 
-            // Create SVG
-            const svg = d3.select(container).append("svg")
+            // Assign to global variable for the Zoom function to use later
+            globalSvg = d3.select(container).append("svg")
                 .attr("width", w)
                 .attr("height", h)
-                // Better touch handling for mobile
                 .style("touch-action", "none");
 
-            const g = svg.append("g");
+            const g = globalSvg.append("g");
 
-            // Setup Layout: Node size 200px wide, 120px tall
             const treeLayout = d3.tree().nodeSize([200, 120]);
             const root = d3.hierarchy(data);
             treeLayout(root);
 
-            // -- Centering Logic --
-            // After layout, x and y are assigned. We need to find the bounds to center it.
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             root.each(d => {
                 if (d.x < minX) minX = d.x;
@@ -481,35 +525,30 @@
                 if (d.y > maxY) maxY = d.y;
             });
 
-            // Center position
             const treeWidth = maxX - minX;
             const treeHeight = maxY - minY;
             const midX = (minX + maxX) / 2;
             const midY = (minY + maxY) / 2;
 
-            // Initial Zoom to fit, or 1.0 if small
-            // 0.8 padding factor
             let scale = Math.min(w / (treeWidth + 200), h / (treeHeight + 200));
             if (scale > 1) scale = 1;
-            if (scale < 0.2) scale = 0.2; // Don't zoom out too far on massive trees initially
+            if (scale < 0.2) scale = 0.2;
 
-            // The 'tree' layout is vertical: x is horizontal, y is depth (vertical)
             const initialTransform = d3.zoomIdentity
-                .translate(w / 2, 50) // Move to center top
+                .translate(w / 2, 50)
                 .scale(scale)
-                .translate(-midX, -minY); // Adjust for tree bounds
+                .translate(-midX, -minY);
 
-            // Zoom Behavior
-            const zoom = d3.zoom()
+            // Assign to global variable
+            globalZoom = d3.zoom()
                 .scaleExtent([0.1, 3])
                 .on("zoom", (e) => {
                     g.attr("transform", e.transform);
                 });
 
-            svg.call(zoom)
-                .call(zoom.transform, initialTransform);
+            globalSvg.call(globalZoom)
+                .call(globalZoom.transform, initialTransform);
 
-            // Draw Links
             g.selectAll(".link")
                 .data(root.links())
                 .enter().append("path")
@@ -517,33 +556,27 @@
                 .attr("fill", "none")
                 .attr("stroke", "#999")
                 .attr("stroke-width", 2)
-                .attr("d", d3.linkVertical()
-                    .x(d => d.x)
-                    .y(d => d.y)
-                );
+                .attr("d", d3.linkVertical().x(d => d.x).y(d => d.y));
 
-            // Draw Nodes
             const nodes = g.selectAll(".node")
-                .data(root.descendants().filter(d => !d.data.isRoot)) // Hide Super Root if exists
+                .data(root.descendants().filter(d => !d.data.isRoot))
                 .enter().append("g")
-                .attr("class", "node")
+                .attr("class", "node") // Important class for selector
                 .attr("transform", d => `translate(${d.x},${d.y})`)
                 .style("cursor", "pointer");
 
-            // Node Box
             nodes.append("rect")
-                .attr("x", -85) // Half width
+                .attr("x", -85)
                 .attr("y", -35)
                 .attr("width", 170)
                 .attr("height", 70)
                 .attr("rx", 8)
                 .attr("ry", 8)
-                .attr("fill", d => d.data.isDummy ? "#4299E1" : "#FBC02D") // Blue vs Yellow
+                .attr("fill", d => d.data.isDummy ? "#4299E1" : "#FBC02D")
                 .attr("stroke", "#333")
                 .attr("stroke-width", 1)
                 .style("filter", "drop-shadow(2px 2px 2px rgba(0,0,0,0.2))");
 
-            // Node Name
             nodes.append("text")
                 .attr("dy", "-0.2em")
                 .attr("text-anchor", "middle")
@@ -552,15 +585,12 @@
                 .attr("fill", d => d.data.isDummy ? "white" : "black")
                 .text(d => d.data.name);
 
-            // Node Year
             nodes.append("text")
                 .attr("dy", "1.2em")
                 .attr("text-anchor", "middle")
                 .style("font-size", "12px")
                 .attr("fill", d => d.data.isDummy ? "#eee" : "#444")
                 .text(d => d.data.year === 'N/A' ? 'Unlisted Big' : `Class of ${d.data.year}`);
-
-            console.log("[Lineage App] Tree rendering complete.");
         }
     </script>
 </body>
