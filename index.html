@@ -11,20 +11,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 
-           Using Custom colors to match the original design:
            Background: #FFF9C4 (Light Yellow)
            Headings: #F57F17 (Dark Gold)
            Buttons/Nodes: #FBC02D (Medium Yellow)
         */
-
         body {
             font-family: 'Open Sans', sans-serif;
             background-color: #FFF9C4;
-            /* Your original light yellow background */
             color: #333;
         }
 
-        /* Custom scrollbar for better aesthetics */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -39,41 +36,43 @@
             border-radius: 4px;
         }
 
-        h1 {
+        h1,
+        h2 {
             color: #F57F17;
-            /* Darker yellow/gold */
+        }
+
+        h1 {
             font-weight: 700;
         }
 
         h2 {
-            color: #F57F17;
             font-weight: 600;
         }
 
-        /* Button Styles */
+        /* Gold Button Style */
         .btn-gold {
             background-color: #FBC02D;
             color: white;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.2s;
         }
 
         .btn-gold:hover {
             background-color: #F9A825;
-            /* Darker yellow on hover */
         }
 
         /* Tree Container */
         #tree-container {
             background-color: #ffffff;
-            /* White background for the tree area */
             border: 1px solid #ddd;
             border-radius: 0.5rem;
             height: 80vh;
+            /* Responsive height */
             width: 100%;
             overflow: hidden;
-            /* Hide scrollbars, let D3 handle zoom/pan */
             position: relative;
             cursor: grab;
+            /* Prevents page scrolling when dragging the tree on mobile */
+            touch-action: none;
         }
 
         #tree-container:active {
@@ -96,16 +95,16 @@
             color: #fff;
         }
 
-        /* Input styling */
+        /* Form Inputs */
         input:focus {
             outline: 2px solid #FBC02D;
             border-color: #FBC02D;
         }
 
-        /* Helper for the content boxes */
+        /* Card Style */
         .content-box {
             background-color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             border-radius: 0.5rem;
             padding: 2rem;
             margin-bottom: 2rem;
@@ -132,15 +131,14 @@
             </div>
         </header>
 
-        <!-- Submitter Name (Global) -->
+        <!-- Submitter Name -->
         <div class="max-w-xl mx-auto mb-8">
             <label for="submitterName" class="block text-gray-700 font-bold mb-2">Your Name (for Leaderboard):</label>
             <input type="text" id="submitterName" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
                 placeholder="Your Name (e.g., Edward Tinkham)" required>
         </div>
 
-        <!-- Add Entry Box -->
-        <!-- Constrained to max-w-xl so it doesn't stretch across the screen -->
+        <!-- Add Entry Form (Constrained Width) -->
         <section class="content-box max-w-xl mx-auto">
             <h2 class="text-3xl text-center mb-6">Add New Entry</h2>
             <form id="memberForm" class="space-y-4">
@@ -166,7 +164,7 @@
             </form>
         </section>
 
-        <!-- Search Box -->
+        <!-- Search Box (Constrained Width) -->
         <section id="searchSection" class="content-box max-w-xl mx-auto">
             <h2 class="text-2xl text-center mb-4">Search for a Member</h2>
             <div class="space-y-4">
@@ -178,7 +176,7 @@
             </div>
         </section>
 
-        <!-- Leaderboard Box -->
+        <!-- Leaderboard (Constrained Width) -->
         <section id="leaderboard" class="content-box max-w-3xl mx-auto">
             <h2 class="text-3xl text-center mb-6">Top Contributors</h2>
             <div class="overflow-x-auto">
@@ -197,8 +195,7 @@
             </div>
         </section>
 
-        <!-- Family Tree Section -->
-        <!-- This section is allowed to be wider (max-w-7xl) so the tree has room -->
+        <!-- Family Tree Section (Full Width) -->
         <section id="familyTreeSection" class="content-box w-full mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center mb-4">
                 <h2 class="text-3xl text-center md:text-left">Family Tree</h2>
@@ -207,13 +204,14 @@
                 </div>
             </div>
 
-            <div id="tree-container"></div>
+            <div id="tree-container" class="flex items-center justify-center">
+                <span class="text-gray-400">Loading Tree...</span>
+            </div>
         </section>
     </div>
 
-    <!-- Libraries -->
+    <!-- D3.js Library (Standard Version) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-    <script src="https://unpkg.com/d3-flextree@2.1.2/dist/d3-flextree.js"></script>
 
     <!-- Firebase SDK & Logic -->
     <script type="module">
@@ -231,8 +229,9 @@
             limit,
         } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+        // --- CONFIGURATION ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w", // <--- REPLACE WITH YOUR REAL API KEY
+            apiKey: "YOUR_API_KEY", // <--- REPLACE THIS
             authDomain: "seal-data-collection.firebaseapp.com",
             projectId: "seal-data-collection",
             storageBucket: "seal-data-collection.appspot.com",
@@ -244,19 +243,24 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- Init ---
+        // --- MAIN LOGIC ---
         document.addEventListener("DOMContentLoaded", () => {
+            console.log("[Lineage App] App initialized.");
+
+            // Restore name
             const savedName = localStorage.getItem('submitterName');
             if (savedName) document.getElementById("submitterName").value = savedName;
 
+            // Bind buttons
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
 
+            // Load data
             loadLeaderboard();
             loadFamilyTree();
         });
 
-        // --- Actions ---
+        // 1. ADD ENTRY
         async function addEntry() {
             const memberName = document.getElementById("memberName").value.trim();
             const bigName = document.getElementById("bigName").value.trim();
@@ -264,18 +268,17 @@
             const submitterName = document.getElementById("submitterName").value.trim();
             const message = document.getElementById("message");
 
+            // Validation
             if (!memberName || !bigName || !gradYear || !submitterName) {
                 message.textContent = "All fields are required.";
                 message.className = "text-red-600";
                 return;
             }
-
             if (!/^\d{4}$/.test(gradYear)) {
                 message.textContent = "Graduation year must be 4 digits.";
                 message.className = "text-red-600";
                 return;
             }
-
             const namePattern = /^[a-zA-Z\s'-]+$/;
             if (!namePattern.test(memberName) || !namePattern.test(bigName) || !namePattern.test(submitterName)) {
                 message.textContent = "Names can only contain letters, spaces, hyphens.";
@@ -286,15 +289,16 @@
             localStorage.setItem('submitterName', submitterName);
 
             try {
+                // Check duplicate
                 const q = query(collection(db, "mentorship"), where("memberName", "==", memberName));
                 const snap = await getDocs(q);
-
                 if (!snap.empty) {
                     message.textContent = "Member already exists.";
                     message.className = "text-red-600";
                     return;
                 }
 
+                // Add
                 await addDoc(collection(db, "mentorship"), {
                     memberName, gradYear, bigName, submittedBy: submitterName, timestamp: new Date()
                 });
@@ -302,16 +306,19 @@
                 message.textContent = "Entry added!";
                 message.className = "text-green-600";
                 document.getElementById("memberForm").reset();
+
+                // Refresh views
                 loadLeaderboard();
                 loadFamilyTree();
 
             } catch (error) {
-                console.error(error);
-                message.textContent = "Error adding entry.";
+                console.error("[Lineage App] Add Error:", error);
+                message.textContent = "Error adding entry. Check console.";
                 message.className = "text-red-600";
             }
         }
 
+        // 2. LEADERBOARD
         async function loadLeaderboard() {
             const tbody = document.getElementById("leaderboard-body");
             tbody.innerHTML = "";
@@ -340,9 +347,10 @@
                     `;
                     tbody.appendChild(tr);
                 });
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("[Lineage App] Leaderboard Error:", e); }
         }
 
+        // 3. SEARCH
         async function searchMember() {
             const val = document.getElementById("searchName").value.trim();
             const res = document.getElementById("searchResult");
@@ -366,34 +374,49 @@
                             </div>`;
                     });
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("[Lineage App] Search Error:", e); }
         }
 
-        // --- Tree Visualization ---
+        // 4. FAMILY TREE (Using Standard D3 Tree)
         async function loadFamilyTree() {
             const container = document.getElementById("tree-container");
-            container.innerHTML = "";
 
-            const snap = await getDocs(collection(db, "mentorship"));
-            const raw = [];
-            snap.forEach(d => raw.push(d.data()));
+            try {
+                const snap = await getDocs(collection(db, "mentorship"));
+                console.log(`[Lineage App] Fetched ${snap.size} members from DB.`);
 
-            const data = buildData(raw);
-            if (!data) {
-                container.innerHTML = "<div class='flex items-center justify-center h-full text-gray-500'>No data yet.</div>";
-                return;
+                if (snap.empty) {
+                    container.innerHTML = "<div class='text-gray-500 p-10'>No members found in database yet. Add one!</div>";
+                    return;
+                }
+
+                const raw = [];
+                snap.forEach(d => raw.push(d.data()));
+
+                const data = buildData(raw);
+
+                // Clear loading message
+                container.innerHTML = "";
+
+                renderTree(data, container);
+
+            } catch (error) {
+                console.error("[Lineage App] Tree Load Error:", error);
+                container.innerHTML = "<div class='text-red-500 p-10'>Error loading tree. Check console.</div>";
             }
-            renderTree(data, container);
         }
 
+        // Convert flat list to Hierarchy
         function buildData(members) {
             const map = new Map();
+            // Create nodes
             members.forEach(m => map.set(m.memberName, {
                 id: m.memberName, name: m.memberName, year: m.gradYear, big: m.bigName, children: []
             }));
 
             const roots = new Map(map);
 
+            // Link parent/child
             map.forEach(node => {
                 if (node.big) {
                     const bigNode = map.get(node.big);
@@ -401,82 +424,143 @@
                         bigNode.children.push(node);
                         roots.delete(node.id);
                     } else {
-                        // Dummy big
-                        const dummy = { id: node.big, name: node.big, year: 'N/A', big: null, children: [node], isDummy: true };
-                        map.set(dummy.id, dummy);
-                        roots.set(dummy.id, dummy);
+                        // Create dummy big if missing
+                        // We must check if this dummy was already created by another sibling
+                        if (map.has(node.big)) {
+                            // Dummy already exists (created by a sibling), push to its children
+                            map.get(node.big).children.push(node);
+                        } else {
+                            const dummy = {
+                                id: node.big, name: node.big, year: 'N/A',
+                                big: null, children: [node], isDummy: true
+                            };
+                            map.set(dummy.id, dummy);
+                            roots.set(dummy.id, dummy); // Dummy is a root initially
+                        }
                         roots.delete(node.id);
                     }
                 }
             });
 
             const finalRoots = Array.from(roots.values());
-            if (finalRoots.length === 0) return null;
-            if (finalRoots.length === 1) return finalRoots[0];
-            return { id: "Root", name: "Society", year: "", children: finalRoots, isRoot: true };
+
+            // If we have multiple disconnected trees, create a "Super Root"
+            if (finalRoots.length === 1) {
+                return finalRoots[0];
+            } else {
+                return { id: "Root", name: "Society", year: "", children: finalRoots, isRoot: true };
+            }
         }
 
+        // Render with D3
         function renderTree(data, container) {
-            if (!d3 || !d3.flextree) return;
-
             const w = container.clientWidth;
             const h = container.clientHeight;
 
-            const svg = d3.select(container).append("svg").attr("width", w).attr("height", h);
+            // Create SVG
+            const svg = d3.select(container).append("svg")
+                .attr("width", w)
+                .attr("height", h)
+                // Better touch handling for mobile
+                .style("touch-action", "none");
+
             const g = svg.append("g");
 
-            const layout = d3.flextree().nodeSize(d => [120, 200]).spacing((a, b) => a.path(b).length * 15);
+            // Setup Layout: Node size 200px wide, 120px tall
+            const treeLayout = d3.tree().nodeSize([200, 120]);
             const root = d3.hierarchy(data);
-            layout(root);
+            treeLayout(root);
 
-            // Calculate bounding box to center
+            // -- Centering Logic --
+            // After layout, x and y are assigned. We need to find the bounds to center it.
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             root.each(d => {
-                if (!d.data.isRoot) {
-                    minX = Math.min(minX, d.x - 80);
-                    maxX = Math.max(maxX, d.x + 80);
-                    minY = Math.min(minY, d.y - 40);
-                    maxY = Math.max(maxY, d.y + 40);
-                }
+                if (d.x < minX) minX = d.x;
+                if (d.x > maxX) maxX = d.x;
+                if (d.y < minY) minY = d.y;
+                if (d.y > maxY) maxY = d.y;
             });
 
-            const treeW = maxX - minX;
-            const treeH = maxY - minY;
-            const scale = Math.min(w / treeW, h / treeH, 1) * 0.9;
-            const tx = (w - (minX + maxX) * scale) / 2 + (minX + maxX) * scale / 2 - (minX + maxX) / 2 * scale;
-            // Simplified centering logic:
-            const centerX = w / 2 - (minX + maxX) / 2 * scale;
-            const centerY = h / 2 - (minY + maxY) / 2 * scale;
+            // Center position
+            const treeWidth = maxX - minX;
+            const treeHeight = maxY - minY;
+            const midX = (minX + maxX) / 2;
+            const midY = (minY + maxY) / 2;
 
-            const zoom = d3.zoom().scaleExtent([0.1, 4]).on("zoom", e => g.attr("transform", e.transform));
-            svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(centerX, centerY).scale(scale));
+            // Initial Zoom to fit, or 1.0 if small
+            // 0.8 padding factor
+            let scale = Math.min(w / (treeWidth + 200), h / (treeHeight + 200));
+            if (scale > 1) scale = 1;
+            if (scale < 0.2) scale = 0.2; // Don't zoom out too far on massive trees initially
 
-            // Links
-            g.selectAll(".link").data(root.links()).enter().append("path")
-                .attr("fill", "none").attr("stroke", "#999").attr("stroke-width", 2)
-                .attr("d", d3.linkVertical().x(d => d.x).y(d => d.y));
+            // The 'tree' layout is vertical: x is horizontal, y is depth (vertical)
+            const initialTransform = d3.zoomIdentity
+                .translate(w / 2, 50) // Move to center top
+                .scale(scale)
+                .translate(-midX, -minY); // Adjust for tree bounds
 
-            // Nodes
-            const nodes = g.selectAll(".node").data(root.descendants().filter(d => !d.data.isRoot))
+            // Zoom Behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 3])
+                .on("zoom", (e) => {
+                    g.attr("transform", e.transform);
+                });
+
+            svg.call(zoom)
+                .call(zoom.transform, initialTransform);
+
+            // Draw Links
+            g.selectAll(".link")
+                .data(root.links())
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("fill", "none")
+                .attr("stroke", "#999")
+                .attr("stroke-width", 2)
+                .attr("d", d3.linkVertical()
+                    .x(d => d.x)
+                    .y(d => d.y)
+                );
+
+            // Draw Nodes
+            const nodes = g.selectAll(".node")
+                .data(root.descendants().filter(d => !d.data.isRoot)) // Hide Super Root if exists
                 .enter().append("g")
-                .attr("transform", d => `translate(${d.x},${d.y})`);
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.x},${d.y})`)
+                .style("cursor", "pointer");
 
+            // Node Box
             nodes.append("rect")
-                .attr("x", -75).attr("y", -35).attr("width", 150).attr("height", 70)
-                .attr("rx", 6).attr("ry", 6)
-                .attr("fill", d => d.data.isDummy ? "#4299E1" : "#FBC02D") // Blue for missing bigs, Yellow for members
-                .attr("stroke", "#333").attr("stroke-width", 1)
-                .attr("class", "shadow");
+                .attr("x", -85) // Half width
+                .attr("y", -35)
+                .attr("width", 170)
+                .attr("height", 70)
+                .attr("rx", 8)
+                .attr("ry", 8)
+                .attr("fill", d => d.data.isDummy ? "#4299E1" : "#FBC02D") // Blue vs Yellow
+                .attr("stroke", "#333")
+                .attr("stroke-width", 1)
+                .style("filter", "drop-shadow(2px 2px 2px rgba(0,0,0,0.2))");
 
-            nodes.append("text").text(d => d.data.name)
-                .attr("dy", "-0.2em").attr("text-anchor", "middle")
-                .attr("font-weight", "bold").attr("font-size", "14px")
-                .attr("fill", d => d.data.isDummy ? "#fff" : "#000");
+            // Node Name
+            nodes.append("text")
+                .attr("dy", "-0.2em")
+                .attr("text-anchor", "middle")
+                .style("font-size", "14px")
+                .style("font-weight", "bold")
+                .attr("fill", d => d.data.isDummy ? "white" : "black")
+                .text(d => d.data.name);
 
-            nodes.append("text").text(d => d.data.year === 'N/A' ? 'Unlisted Big' : d.data.year)
-                .attr("dy", "1.2em").attr("text-anchor", "middle")
-                .attr("font-size", "12px")
-                .attr("fill", d => d.data.isDummy ? "#eee" : "#333");
+            // Node Year
+            nodes.append("text")
+                .attr("dy", "1.2em")
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .attr("fill", d => d.data.isDummy ? "#eee" : "#444")
+                .text(d => d.data.year === 'N/A' ? 'Unlisted Big' : `Class of ${d.data.year}`);
+
+            console.log("[Lineage App] Tree rendering complete.");
         }
     </script>
 </body>
