@@ -164,21 +164,7 @@
             </form>
         </section>
 
-        <!-- Family Tree Section (Moved UP) -->
-        <section id="familyTreeSection" class="content-box w-full mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-                <h2 class="text-3xl text-center md:text-left">Family Tree</h2>
-                <div class="text-sm text-gray-500 mt-2 md:mt-0">
-                    Scroll to Zoom • Drag to Pan
-                </div>
-            </div>
-
-            <div id="tree-container" class="flex items-center justify-center">
-                <span class="text-gray-400">Loading Tree...</span>
-            </div>
-        </section>
-
-        <!-- Search Box (Moved DOWN) -->
+        <!-- Search Box (Moved ABOVE Tree) -->
         <section id="searchSection" class="content-box max-w-xl mx-auto">
             <h2 class="text-2xl text-center mb-4">Search for a Member</h2>
             <div class="space-y-4">
@@ -190,7 +176,35 @@
             </div>
         </section>
 
-        <!-- Leaderboard (Moved DOWN) -->
+        <!-- Family Tree Section -->
+        <section id="familyTreeSection" class="content-box w-full mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                <h2 class="text-3xl text-center md:text-left">Family Tree</h2>
+                <div class="text-sm text-gray-500 mt-2 md:mt-0">
+                    Scroll to Zoom • Drag to Pan
+                </div>
+            </div>
+
+            <!-- Filter Input -->
+            <div
+                class="mb-4 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label for="minTreeSize" class="font-bold text-gray-700">Minimum Tree Size:</label>
+                <div class="relative">
+                    <input type="number" id="minTreeSize" value="1" min="1"
+                        class="w-24 p-2 border border-gray-300 rounded text-center font-semibold"
+                        title="Only show trees with at least this many members">
+                    <span class="text-xs text-gray-500 block mt-1">Show lines with ≥ X members</span>
+                </div>
+                <button id="applyFilter" class="btn-gold px-4 py-2 rounded text-sm font-bold shadow-sm">Update
+                    View</button>
+            </div>
+
+            <div id="tree-container" class="flex items-center justify-center">
+                <span class="text-gray-400">Loading Tree...</span>
+            </div>
+        </section>
+
+        <!-- Leaderboard -->
         <section id="leaderboard" class="content-box max-w-3xl mx-auto">
             <h2 class="text-3xl text-center mb-6">Top Contributors</h2>
             <div class="overflow-x-auto">
@@ -243,9 +257,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Global variables for D3 zoom control
+        // Global variables
         let globalSvg = null;
         let globalZoom = null;
+        let cachedMembers = []; // Store data to avoid re-fetching on filter change
 
         // --- MAIN LOGIC ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -258,6 +273,12 @@
             // Bind buttons
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
+
+            // Bind Filter button
+            document.getElementById("applyFilter").addEventListener("click", () => {
+                const minSize = parseInt(document.getElementById("minTreeSize").value) || 1;
+                reloadTreeFromCache(minSize);
+            });
 
             // Load data
             loadLeaderboard();
@@ -402,8 +423,6 @@
                 return;
             }
 
-            // Find the node datum matching the name
-            // We select all groups with class 'node' and filter data
             let targetNode = null;
             d3.selectAll(".node").each(function (d) {
                 if (d.data.name === name) {
@@ -418,34 +437,29 @@
 
                 // Zoom Level 2x
                 const scale = 2;
-                // Center calculations
-                // The transform translates to center (w/2, h/2), then subtracts the scaled node position
                 const tx = (w / 2) - (targetNode.x * scale);
                 const ty = (h / 2) - (targetNode.y * scale);
 
-                // Animate the transition
                 globalSvg.transition()
                     .duration(1000)
                     .call(globalZoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
 
-                // Optional: Highlight the node visually temporarily
                 d3.selectAll(".node rect")
                     .attr("stroke", "#333")
-                    .attr("stroke-width", 1); // Reset others
+                    .attr("stroke-width", 1);
 
                 d3.selectAll(".node").filter(d => d.data.name === name).select("rect")
                     .transition().duration(500)
-                    .attr("stroke", "#EF4444") // Tailwind Red-500
+                    .attr("stroke", "#EF4444") // Red
                     .attr("stroke-width", 4)
                     .transition().delay(2000).duration(500)
                     .attr("stroke", "#333")
                     .attr("stroke-width", 1);
 
-                // Scroll page to tree section
                 document.getElementById("familyTreeSection").scrollIntoView({ behavior: 'smooth' });
 
             } else {
-                alert(`Member "${name}" found in search but not visible in the current tree structure.`);
+                alert(`Member "${name}" found in search, but is hidden by the current 'Min Tree Size' filter.`);
             }
         }
 
@@ -460,11 +474,12 @@
                     return;
                 }
 
-                const raw = [];
-                snap.forEach(d => raw.push(d.data()));
-                const data = buildData(raw);
-                container.innerHTML = "";
-                renderTree(data, container);
+                cachedMembers = [];
+                snap.forEach(d => cachedMembers.push(d.data()));
+
+                // Initial render with current input value
+                const minSize = parseInt(document.getElementById("minTreeSize").value) || 1;
+                reloadTreeFromCache(minSize);
 
             } catch (error) {
                 console.error("[Lineage App] Tree Load Error:", error);
@@ -472,12 +487,30 @@
             }
         }
 
-        function buildData(members) {
+        function reloadTreeFromCache(minSize) {
+            const container = document.getElementById("tree-container");
+            container.innerHTML = ""; // Clear existing
+
+            const data = buildData(cachedMembers, minSize);
+
+            if (!data) {
+                container.innerHTML = `<div class='text-gray-500 p-10 flex flex-col items-center'>
+                    <p>No lineage trees found with size >= ${minSize}.</p>
+                    <p class='text-sm mt-2'>Try lowering the Minimum Tree Size.</p>
+                </div>`;
+                return;
+            }
+
+            renderTree(data, container);
+        }
+
+        function buildData(members, minSize) {
             const map = new Map();
             members.forEach(m => map.set(m.memberName, {
                 id: m.memberName, name: m.memberName, year: m.gradYear, big: m.bigName, children: []
             }));
             const roots = new Map(map);
+
             map.forEach(node => {
                 if (node.big) {
                     const bigNode = map.get(node.big);
@@ -496,16 +529,32 @@
                     }
                 }
             });
-            const finalRoots = Array.from(roots.values());
+
+            let finalRoots = Array.from(roots.values());
+
+            // FILTER LOGIC: Count size of each tree and filter
+            finalRoots = finalRoots.filter(root => getTreeSize(root) >= minSize);
+
+            if (finalRoots.length === 0) return null;
             if (finalRoots.length === 1) return finalRoots[0];
             return { id: "Root", name: "Society", year: "", children: finalRoots, isRoot: true };
+        }
+
+        // Helper to count nodes in a tree
+        function getTreeSize(node) {
+            let count = 1; // Count self
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => {
+                    count += getTreeSize(child);
+                });
+            }
+            return count;
         }
 
         function renderTree(data, container) {
             const w = container.clientWidth;
             const h = container.clientHeight;
 
-            // Assign to global variable for the Zoom function to use later
             globalSvg = d3.select(container).append("svg")
                 .attr("width", w)
                 .attr("height", h)
@@ -539,7 +588,6 @@
                 .scale(scale)
                 .translate(-midX, -minY);
 
-            // Assign to global variable
             globalZoom = d3.zoom()
                 .scaleExtent([0.1, 3])
                 .on("zoom", (e) => {
@@ -561,7 +609,7 @@
             const nodes = g.selectAll(".node")
                 .data(root.descendants().filter(d => !d.data.isRoot))
                 .enter().append("g")
-                .attr("class", "node") // Important class for selector
+                .attr("class", "node")
                 .attr("transform", d => `translate(${d.x},${d.y})`)
                 .style("cursor", "pointer");
 
