@@ -164,7 +164,7 @@
             </form>
         </section>
 
-        <!-- Search Box (Moved ABOVE Tree) -->
+        <!-- Search Box -->
         <section id="searchSection" class="content-box max-w-xl mx-auto">
             <h2 class="text-2xl text-center mb-4">Search for a Member</h2>
             <div class="space-y-4">
@@ -175,6 +175,8 @@
                 <div id="searchResult" class="mt-4 text-left space-y-3"></div>
             </div>
         </section>
+
+
 
         <!-- Family Tree Section -->
         <section id="familyTreeSection" class="content-box w-full mx-auto">
@@ -201,6 +203,26 @@
 
             <div id="tree-container" class="flex items-center justify-center">
                 <span class="text-gray-400">Loading Tree...</span>
+            </div>
+        </section>
+
+        <!-- RECENT ENTRIES (NEW SECTION) -->
+        <section id="recentEntriesSection" class="content-box max-w-4xl mx-auto">
+            <h2 class="text-2xl text-center mb-6">Recently Added</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700">
+                            <th class="p-3 border border-gray-200">Member Name</th>
+                            <th class="p-3 border border-gray-200">Class</th>
+                            <th class="p-3 border border-gray-200">Big's Name</th>
+                            <th class="p-3 border border-gray-200">Submitted By</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-entries-body" class="text-sm md:text-base">
+                        <!-- JS injects rows here -->
+                    </tbody>
+                </table>
             </div>
         </section>
 
@@ -282,6 +304,7 @@
 
             // Load data
             loadLeaderboard();
+            loadRecentEntries(); // Load Recent Entries
             loadFamilyTree();
         });
 
@@ -334,6 +357,7 @@
 
                 // Refresh views
                 loadLeaderboard();
+                loadRecentEntries(); // Refresh recent entries
                 loadFamilyTree();
 
             } catch (error) {
@@ -375,23 +399,60 @@
             } catch (e) { console.error("[Lineage App] Leaderboard Error:", e); }
         }
 
-        // 3. SEARCH (Updated: Case-Insensitive + "Contains" match)
+        // 3. RECENT ENTRIES (New Function)
+        async function loadRecentEntries() {
+            const tbody = document.getElementById("recent-entries-body");
+            tbody.innerHTML = "<tr><td colspan='4' class='text-center p-4 text-gray-500'>Loading...</td></tr>";
+
+            try {
+                // Get top 5 sorted by timestamp desc
+                const q = query(
+                    collection(db, "mentorship"),
+                    orderBy("timestamp", "desc"),
+                    limit(5)
+                );
+
+                const snap = await getDocs(q);
+
+                tbody.innerHTML = ""; // Clear loading message
+
+                if (snap.empty) {
+                    tbody.innerHTML = "<tr><td colspan='4' class='text-center p-4 text-gray-500'>No entries yet.</td></tr>";
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const tr = document.createElement("tr");
+                    tr.className = "border-b border-gray-200 hover:bg-gray-50 transition";
+                    tr.innerHTML = `
+                        <td class="p-3 border-r border-gray-200 font-semibold text-gray-800">${d.memberName}</td>
+                        <td class="p-3 border-r border-gray-200">${d.gradYear}</td>
+                        <td class="p-3 border-r border-gray-200">${d.bigName}</td>
+                        <td class="p-3 text-sm text-gray-600">${d.submittedBy}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error("[Lineage App] Recent Entries Error:", e);
+                tbody.innerHTML = "<tr><td colspan='4' class='text-center p-4 text-red-500'>Error loading entries (Check Firestore Index).</td></tr>";
+            }
+        }
+
+        // 4. SEARCH (Case-Insensitive + Contains)
         async function searchMember() {
-            const val = document.getElementById("searchName").value.trim().toLowerCase(); // Convert input to lowercase
+            const val = document.getElementById("searchName").value.trim().toLowerCase();
             const res = document.getElementById("searchResult");
             res.innerHTML = "";
 
             if (!val) return;
 
-            // Use the cachedMembers array that was populated when the tree loaded
             if (cachedMembers.length === 0) {
                 res.innerHTML = "<p class='text-gray-500'>Data is still loading, please wait...</p>";
                 return;
             }
 
             try {
-                // Filter the local data instead of querying Firestore
-                // This checks if the member name (converted to lowercase) INCLUDES the search term
                 const results = cachedMembers.filter(d =>
                     d.memberName.toLowerCase().includes(val)
                 );
@@ -399,14 +460,9 @@
                 if (results.length === 0) {
                     res.innerHTML = "<p class='text-red-600'>Not found.</p>";
                 } else {
-                    // Limit to top 10 results to keep UI clean
                     results.slice(0, 10).forEach(d => {
-
-                        // Create card element
                         const card = document.createElement('div');
                         card.className = "p-3 bg-gray-50 border border-gray-200 rounded shadow-sm";
-
-                        // Text Info
                         card.innerHTML = `
                             <p><strong>Name:</strong> ${d.memberName}</p>
                             <p><strong>Class:</strong> ${d.gradYear}</p>
@@ -414,7 +470,6 @@
                             <p class="text-sm text-gray-500 mt-1">By: ${d.submittedBy}</p>
                         `;
 
-                        // "Locate in Tree" Button
                         const locateBtn = document.createElement('button');
                         locateBtn.textContent = "Locate in Tree";
                         locateBtn.className = "mt-2 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition";
@@ -427,7 +482,7 @@
             } catch (e) { console.error("[Lineage App] Search Error:", e); }
         }
 
-        // 4. ZOOM TO MEMBER LOGIC
+        // 5. ZOOM TO MEMBER LOGIC
         function zoomToMember(name) {
             if (!globalSvg || !globalZoom) {
                 alert("Tree not loaded yet.");
@@ -446,7 +501,6 @@
                 const w = container.clientWidth;
                 const h = container.clientHeight;
 
-                // Zoom Level 2x
                 const scale = 2;
                 const tx = (w / 2) - (targetNode.x * scale);
                 const ty = (h / 2) - (targetNode.y * scale);
@@ -474,7 +528,7 @@
             }
         }
 
-        // 5. FAMILY TREE
+        // 6. FAMILY TREE
         async function loadFamilyTree() {
             const container = document.getElementById("tree-container");
 
@@ -488,7 +542,6 @@
                 cachedMembers = [];
                 snap.forEach(d => cachedMembers.push(d.data()));
 
-                // Initial render with current input value
                 const minSize = parseInt(document.getElementById("minTreeSize").value) || 1;
                 reloadTreeFromCache(minSize);
 
@@ -500,7 +553,7 @@
 
         function reloadTreeFromCache(minSize) {
             const container = document.getElementById("tree-container");
-            container.innerHTML = ""; // Clear existing
+            container.innerHTML = "";
 
             const data = buildData(cachedMembers, minSize);
 
@@ -542,8 +595,6 @@
             });
 
             let finalRoots = Array.from(roots.values());
-
-            // FILTER LOGIC: Count size of each tree and filter
             finalRoots = finalRoots.filter(root => getTreeSize(root) >= minSize);
 
             if (finalRoots.length === 0) return null;
@@ -551,9 +602,8 @@
             return { id: "Root", name: "Society", year: "", children: finalRoots, isRoot: true };
         }
 
-        // Helper to count nodes in a tree
         function getTreeSize(node) {
-            let count = 1; // Count self
+            let count = 1;
             if (node.children && node.children.length > 0) {
                 node.children.forEach(child => {
                     count += getTreeSize(child);
