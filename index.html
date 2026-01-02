@@ -117,52 +117,21 @@
 
         <!-- Header -->
         <header class="text-center mb-10 max-w-3xl mx-auto">
-            <h1 class="text-4xl md:text-5xl mb-6">Seal and Serpent Lineage Tracking Form</h1>
+            <h1 class="text-4xl md:text-5xl mb-6">Seal and Serpent Lineage Tree</h1>
             <div class="space-y-4 text-gray-700 text-lg">
-                <p>I created this form in an effort to track lineages back as far as possible and make some cool graphs
+                <p>I created this tree and form in an effort to track lineages back as far as possible and make some
+                    cool graphs
                     of our society over time to share with actives and alumni.</p>
-                <p>Please enter information for any members whom you know or have a black book containing, following the
+                <p>Please enter information in the form below the tree for any members whom you know or have a black
+                    book containing, following the
                     formatting outlined in grey inside the boxes.</p>
-                <p>Enter your name in the first box to count towards the leaderboard. Use full, legal first and last
-                    names for all members and 4 digits for the year.</p>
+                <p>Use the "Search for a Member" box to find a member, and click the "Locate in tree" button on their
+                    result to see them in the tree!</p>
                 <p class="text-sm">Thank you for helping! Questions? Email <a href="mailto:ajh374@cornell.edu"
                         class="text-blue-600 hover:underline">ajh374@cornell.edu</a></p>
                 <p class="font-bold">- Aaron Harnish, 2027</p>
             </div>
         </header>
-
-        <!-- Submitter Name -->
-        <div class="max-w-xl mx-auto mb-8">
-            <label for="submitterName" class="block text-gray-700 font-bold mb-2">Your Name (for Leaderboard):</label>
-            <input type="text" id="submitterName" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                placeholder="Your Name (e.g., Edward Tinkham)" required>
-        </div>
-
-        <!-- Add Entry Form -->
-        <section class="content-box max-w-xl mx-auto">
-            <h2 class="text-3xl text-center mb-6">Add New Entry</h2>
-            <form id="memberForm" class="space-y-4">
-                <div>
-                    <label for="memberName" class="block text-gray-700 font-bold mb-1">Member's Name:</label>
-                    <input type="text" id="memberName" class="w-full p-3 border border-gray-300 rounded-lg"
-                        placeholder="Member's Name (e.g., Aaron Harnish)" required>
-                </div>
-                <div>
-                    <label for="gradYear" class="block text-gray-700 font-bold mb-1">Graduation Year:</label>
-                    <input type="text" id="gradYear" class="w-full p-3 border border-gray-300 rounded-lg"
-                        placeholder="YYYY (e.g., 2027)" required>
-                </div>
-                <div>
-                    <label for="bigName" class="block text-gray-700 font-bold mb-1">Member's Big's Name:</label>
-                    <input type="text" id="bigName" class="w-full p-3 border border-gray-300 rounded-lg"
-                        placeholder="Big's Name (e.g., Cedric Orton-Urbina)" required>
-                </div>
-
-                <button type="button" id="addEntryButton"
-                    class="btn-gold w-full py-3 px-4 rounded-lg font-bold text-lg mt-4 shadow-md">Add Entry</button>
-                <p id="message" class="text-center font-bold mt-2"></p>
-            </form>
-        </section>
 
         <!-- Search Box -->
         <section id="searchSection" class="content-box max-w-xl mx-auto">
@@ -205,6 +174,41 @@
                 <span class="text-gray-400">Loading Tree...</span>
             </div>
         </section>
+
+        <!-- Submitter Name -->
+        <div class="max-w-xl mx-auto mb-8">
+            <label for="submitterName" class="block text-gray-700 font-bold mb-2">Your Name (for Leaderboard):</label>
+            <input type="text" id="submitterName" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
+                placeholder="Your Name (e.g., Edward Tinkham)" required>
+        </div>
+
+        <!-- Add Entry Form -->
+        <section class="content-box max-w-xl mx-auto">
+            <h2 class="text-3xl text-center mb-6">Add New Entry</h2>
+            <form id="memberForm" class="space-y-4">
+                <div>
+                    <label for="memberName" class="block text-gray-700 font-bold mb-1">Member's Name:</label>
+                    <input type="text" id="memberName" class="w-full p-3 border border-gray-300 rounded-lg"
+                        placeholder="Member's Name (e.g., Aaron Harnish)" required>
+                </div>
+                <div>
+                    <label for="gradYear" class="block text-gray-700 font-bold mb-1">Graduation Year:</label>
+                    <input type="text" id="gradYear" class="w-full p-3 border border-gray-300 rounded-lg"
+                        placeholder="YYYY (e.g., 2027)" required>
+                </div>
+                <div>
+                    <label for="bigName" class="block text-gray-700 font-bold mb-1">Member's Big's Name:</label>
+                    <input type="text" id="bigName" class="w-full p-3 border border-gray-300 rounded-lg"
+                        placeholder="Big's Name (e.g., Cedric Orton-Urbina)" required>
+                </div>
+
+                <button type="button" id="addEntryButton"
+                    class="btn-gold w-full py-3 px-4 rounded-lg font-bold text-lg mt-4 shadow-md">Add Entry</button>
+                <p id="message" class="text-center font-bold mt-2"></p>
+            </form>
+        </section>
+
+
 
         <!-- RECENT ENTRIES (NEW SECTION) -->
         <section id="recentEntriesSection" class="content-box max-w-4xl mx-auto">
