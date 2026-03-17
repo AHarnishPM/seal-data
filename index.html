@@ -442,6 +442,135 @@
             .site-header { padding: 2.5rem 1.25rem 2rem; }
             .page-content { padding: 1.5rem 1rem 4rem; }
         }
+
+        /* ─── PROFILE MODAL ─── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(26,21,16,0.5);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+        .modal {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(26,21,16,0.2);
+            transform: translateY(18px) scale(0.97);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 1.4rem 1.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+            gap: 0.75rem;
+        }
+        .modal-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+        .modal-meta { font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.3rem; }
+
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: var(--ink-soft);
+            line-height: 1;
+            padding: 0.2rem 0.4rem;
+            border-radius: 5px;
+            flex-shrink: 0;
+            transition: color 0.15s, background 0.15s;
+        }
+        .modal-close:hover { color: var(--ink); background: var(--cream); }
+
+        .modal-body { padding: 1.4rem 1.5rem; }
+
+        .modal-section-label {
+            display: block;
+            font-size: 0.73rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: var(--ink-soft);
+            margin-bottom: 0.5rem;
+        }
+
+        .bio-view {
+            font-size: 0.9rem;
+            line-height: 1.75;
+            color: var(--ink-mid);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .bio-empty { font-style: italic; color: var(--ink-soft); }
+
+        .modal-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 0.75rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: var(--ink);
+            background: var(--cream);
+            resize: vertical;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .modal-textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
+        }
+
+        .modal-footer {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 1rem 1.5rem 1.4rem;
+            border-top: 1px solid var(--border);
+        }
+        .modal-save-msg {
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-right: auto;
+            min-height: 1.2em;
+        }
+
+        /* subtle glow on node hover */
+        .node:hover rect {
+            filter: drop-shadow(0 0 7px rgba(201,146,42,0.55)) !important;
+            cursor: pointer;
+        }
+
+        /* nodes with a saved bio get a small indicator dot */
+        .node-has-bio rect {
+            stroke: var(--gold) !important;
+            stroke-width: 2 !important;
+        }
     </style>
 </head>
 <body>
@@ -486,14 +615,14 @@
 
                 <div class="submitter-name">
                     <label for="submitterName">Your name (for leaderboard)</label>
-                    <input type="text" id="submitterName" class="input-field" placeholder="Edward Tinkham">
+                    <input type="text" id="submitterName" class="input-field" placeholder="e.g. Edward Tinkham">
                 </div>
 
                 <form id="memberForm">
                     <div class="form-grid">
                         <div class="form-group full">
                             <label for="memberName">Member's name</label>
-                            <input type="text" id="memberName" class="input-field" placeholder="Aaron Harnish" required>
+                            <input type="text" id="memberName" class="input-field" placeholder="e.g. Aaron Harnish" required>
                         </div>
                         <div class="form-group">
                             <label for="gradYear">Graduation year</label>
@@ -501,7 +630,7 @@
                         </div>
                         <div class="form-group">
                             <label for="bigName">Big's name</label>
-                            <input type="text" id="bigName" class="input-field" placeholder="Cedric Orton-Urbina" required>
+                            <input type="text" id="bigName" class="input-field" placeholder="e.g. Cedric Orton" required>
                         </div>
                     </div>
                     <button type="button" id="addEntryButton" class="btn btn-primary" style="width:100%;margin-top:1rem;height:46px;font-size:0.95rem;">
@@ -571,12 +700,38 @@
         </div>
     </main>
 
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal" role="dialog" aria-modal="true">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-name" id="modalName"></div>
+                    <div class="modal-meta" id="modalMeta"></div>
+                </div>
+                <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+            </div>
+            <div class="modal-body">
+                <span class="modal-section-label">Biography</span>
+                <!-- View mode -->
+                <div id="bioView" class="bio-view"></div>
+                <!-- Edit mode (hidden by default) -->
+                <textarea id="bioTextarea" class="modal-textarea" placeholder="Write a short bio — class year, hometown, major, roles in the society, fun facts…" style="display:none"></textarea>
+            </div>
+            <div class="modal-footer">
+                <span class="modal-save-msg" id="modalSaveMsg"></span>
+                <button class="btn btn-secondary" id="modalEditBtn">Edit Bio</button>
+                <button class="btn btn-primary" id="modalSaveBtn" style="display:none">Save</button>
+                <button class="btn btn-secondary" id="modalCancelBtn" style="display:none">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import {
             getFirestore, addDoc, collection, query, where,
-            getDocs, orderBy, limit,
+            getDocs, orderBy, limit, doc, setDoc, getDoc,
         } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -595,6 +750,7 @@
         let globalSvg = null;
         let globalZoom = null;
         let cachedMembers = [];
+        let cachedProfiles = {}; // name -> { bio }
 
         document.addEventListener("DOMContentLoaded", () => {
             const saved = localStorage.getItem('submitterName');
@@ -608,6 +764,15 @@
             document.getElementById("applyFilter").addEventListener("click", () => {
                 reloadTreeFromCache(parseInt(document.getElementById("minTreeSize").value) || 1);
             });
+
+            // Modal wiring
+            document.getElementById("modalClose").addEventListener("click", closeModal);
+            document.getElementById("profileModal").addEventListener("click", e => {
+                if (e.target === document.getElementById("profileModal")) closeModal();
+            });
+            document.getElementById("modalEditBtn").addEventListener("click", enterEditMode);
+            document.getElementById("modalCancelBtn").addEventListener("click", exitEditMode);
+            document.getElementById("modalSaveBtn").addEventListener("click", saveBio);
 
             loadLeaderboard();
             loadRecentEntries();
@@ -768,11 +933,120 @@
             document.getElementById("familyTreeSection").scrollIntoView({behavior:"smooth"});
         }
 
+        // ─── PROFILE MODAL ───
+        let currentModalMember = null;
+
+        async function openModal(memberData) {
+            currentModalMember = memberData;
+            document.getElementById("modalName").textContent = memberData.name;
+            document.getElementById("modalMeta").textContent =
+                [memberData.year && memberData.year !== 'N/A' ? `Class of ${memberData.year}` : null,
+                 memberData.big ? `Big: ${memberData.big}` : null]
+                .filter(Boolean).join('  ·  ');
+
+            // Reset to view mode
+            exitEditMode();
+            document.getElementById("modalSaveMsg").textContent = "";
+
+            // Load bio
+            const bioView = document.getElementById("bioView");
+            bioView.innerHTML = `<span style="color:var(--ink-soft);font-size:0.85rem">Loading…</span>`;
+            document.getElementById("profileModal").classList.add("open");
+            document.body.style.overflow = "hidden";
+
+            try {
+                const profile = cachedProfiles[memberData.name];
+                const bio = profile?.bio || "";
+                renderBioView(bio);
+            } catch(e) {
+                renderBioView("");
+            }
+        }
+
+        function renderBioView(bio) {
+            const bioView = document.getElementById("bioView");
+            if (bio) {
+                bioView.className = "bio-view";
+                bioView.textContent = bio;
+            } else {
+                bioView.className = "bio-view bio-empty";
+                bioView.textContent = "No bio yet. Click "Edit Bio" to add one.";
+            }
+        }
+
+        function closeModal() {
+            document.getElementById("profileModal").classList.remove("open");
+            document.body.style.overflow = "";
+            currentModalMember = null;
+        }
+
+        function enterEditMode() {
+            const bio = cachedProfiles[currentModalMember?.name]?.bio || "";
+            document.getElementById("bioTextarea").value = bio;
+            document.getElementById("bioView").style.display = "none";
+            document.getElementById("bioTextarea").style.display = "block";
+            document.getElementById("modalEditBtn").style.display = "none";
+            document.getElementById("modalSaveBtn").style.display = "inline-flex";
+            document.getElementById("modalCancelBtn").style.display = "inline-flex";
+            document.getElementById("modalSaveMsg").textContent = "";
+            document.getElementById("bioTextarea").focus();
+        }
+
+        function exitEditMode() {
+            document.getElementById("bioView").style.display = "block";
+            document.getElementById("bioTextarea").style.display = "none";
+            document.getElementById("modalEditBtn").style.display = "inline-flex";
+            document.getElementById("modalSaveBtn").style.display = "none";
+            document.getElementById("modalCancelBtn").style.display = "none";
+        }
+
+        async function saveBio() {
+            if (!currentModalMember) return;
+            const bio = document.getElementById("bioTextarea").value.trim();
+            const msgEl = document.getElementById("modalSaveMsg");
+            msgEl.style.color = "var(--ink-soft)";
+            msgEl.textContent = "Saving…";
+
+            try {
+                const docRef = doc(db, "memberProfiles", currentModalMember.name);
+                await setDoc(docRef, { bio, updatedAt: new Date() }, { merge: true });
+
+                // Update cache
+                cachedProfiles[currentModalMember.name] = { bio };
+
+                // Update node appearance in tree
+                d3.selectAll(".node")
+                    .filter(d => d.data.name === currentModalMember.name)
+                    .classed("node-has-bio", bio.length > 0);
+
+                renderBioView(bio);
+                exitEditMode();
+                msgEl.style.color = "#1a7a45";
+                msgEl.textContent = "Saved!";
+                setTimeout(() => { msgEl.textContent = ""; }, 2500);
+            } catch(e) {
+                console.error(e);
+                msgEl.style.color = "var(--red-accent)";
+                msgEl.textContent = "Error saving.";
+            }
+        }
+
+        // ─── LOAD PROFILES ───
+        async function loadAllProfiles() {
+            try {
+                const snap = await getDocs(collection(db, "memberProfiles"));
+                snap.forEach(d => { cachedProfiles[d.id] = d.data(); });
+            } catch(e) { console.error("Profiles load error:", e); }
+        }
+
         // ─── LOAD TREE ───
         async function loadFamilyTree() {
             const cont = document.getElementById("tree-container");
             try {
-                const snap = await getDocs(collection(db,"mentorship"));
+                const [snap] = await Promise.all([
+                    getDocs(collection(db,"mentorship")),
+                    loadAllProfiles()
+                ]);
                 if (snap.empty) {
                     cont.innerHTML = `<span class="loading-msg">No members yet — add one above!</span>`;
                     return;
@@ -871,9 +1145,15 @@
             const nodes = g.selectAll(".node")
                 .data(root.descendants().filter(d => !d.data.isRoot))
                 .enter().append("g")
-                .attr("class","node")
+                .attr("class", d => {
+                    const hasBio = cachedProfiles[d.data.name]?.bio;
+                    return "node" + (hasBio ? " node-has-bio" : "");
+                })
                 .attr("transform", d=>`translate(${d.x},${d.y})`)
-                .style("cursor","pointer");
+                .style("cursor","pointer")
+                .on("click", function(event, d) {
+                    if (!d.data.isRoot) openModal(d.data);
+                });
 
             nodes.append("rect")
                 .attr("x",-80).attr("y",-28).attr("width",160).attr("height",56)
@@ -897,9 +1177,4 @@
                 .attr("text-anchor","middle")
                 .style("font-family","'DM Sans',sans-serif")
                 .style("font-size","11px")
-                .attr("fill", d => d.data.isDummy ? "#bdc3c7" : "var(--ink-soft)")
-                .text(d => d.data.year === 'N/A' ? 'Unlisted Big' : (d.data.year ? `'${String(d.data.year).slice(2)}` : ''));
-        }
-    </script>
-</body>
-</html>
+        
