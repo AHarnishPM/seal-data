@@ -22,19 +22,10 @@
             --white:      #FFFFFF;
             --red-accent: #C0392B;
         }
-
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         html { scroll-behavior: smooth; }
+        body { font-family: 'DM Sans', sans-serif; background-color: var(--cream); color: var(--ink); min-height: 100vh; }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--cream);
-            color: var(--ink);
-            min-height: 100vh;
-        }
-
-        /* ─── TEXTURES & ATMOSPHERE ─── */
         body::before {
             content: '';
             position: fixed;
@@ -46,14 +37,12 @@
             z-index: 0;
         }
 
-        /* ─── HEADER ─── */
         .site-header {
             position: relative;
             text-align: center;
             padding: 4rem 2rem 3rem;
             border-bottom: 1px solid var(--border);
         }
-
         .site-header::after {
             content: '';
             position: absolute;
@@ -65,7 +54,6 @@
             background: var(--gold);
             border-radius: 2px;
         }
-
         .header-eyebrow {
             font-family: 'DM Sans', sans-serif;
             font-weight: 500;
@@ -75,7 +63,6 @@
             color: var(--gold);
             margin-bottom: 0.75rem;
         }
-
         .site-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: clamp(2.2rem, 6vw, 4rem);
@@ -84,11 +71,7 @@
             line-height: 1.1;
             letter-spacing: -0.02em;
         }
-
-        .site-header h1 span {
-            color: var(--gold);
-        }
-
+        .site-header h1 span { color: var(--gold); }
         .header-rule {
             display: flex;
             align-items: center;
@@ -97,43 +80,12 @@
             margin: 1.5rem auto;
             max-width: 360px;
         }
+        .header-rule::before, .header-rule::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .header-rule span { font-size: 1rem; color: var(--gold-muted); }
+        .header-desc { max-width: 520px; margin: 0 auto; font-size: 0.93rem; line-height: 1.75; color: var(--ink-mid); }
+        .header-desc a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+        .header-sig { display: inline-block; margin-top: 1rem; font-family: 'Playfair Display', serif; font-style: italic; color: var(--ink-soft); font-size: 0.9rem; }
 
-        .header-rule::before, .header-rule::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .header-rule span {
-            font-size: 1rem;
-            color: var(--gold-muted);
-        }
-
-        .header-desc {
-            max-width: 520px;
-            margin: 0 auto;
-            font-size: 0.93rem;
-            line-height: 1.75;
-            color: var(--ink-mid);
-        }
-
-        .header-desc a {
-            color: var(--gold);
-            text-decoration: underline;
-            text-underline-offset: 3px;
-        }
-
-        .header-sig {
-            display: inline-block;
-            margin-top: 1rem;
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            color: var(--ink-soft);
-            font-size: 0.9rem;
-        }
-
-        /* ─── LAYOUT ─── */
         .page-content {
             position: relative;
             z-index: 1;
@@ -144,17 +96,13 @@
             flex-direction: column;
             gap: 2rem;
         }
-
-        /* ─── CARDS ─── */
         .card {
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 2rem;
             box-shadow: 0 2px 16px rgba(26,21,16,0.05);
-            transition: box-shadow 0.2s;
         }
-
         .card-title {
             font-family: 'Playfair Display', serif;
             font-size: 1.35rem;
@@ -167,30 +115,10 @@
             align-items: center;
             gap: 0.6rem;
         }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
 
-        .card-title-icon {
-            font-size: 1rem;
-            opacity: 0.7;
-        }
-
-        /* ─── TWO-COL GRID ON DESKTOP ─── */
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        @media (max-width: 720px) {
-            .two-col { grid-template-columns: 1fr; }
-        }
-
-        /* ─── SEARCH ─── */
-        .input-wrap {
-            position: relative;
-            display: flex;
-            gap: 0.5rem;
-        }
-
+        .input-wrap { display: flex; gap: 0.5rem; }
         .input-field {
             flex: 1;
             height: 44px;
@@ -204,13 +132,7 @@
             transition: border-color 0.2s, box-shadow 0.2s;
             -webkit-appearance: none;
         }
-
-        .input-field:focus {
-            outline: none;
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
-        }
-
+        .input-field:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,146,42,0.12); }
         .input-field::placeholder { color: var(--ink-soft); }
 
         .btn {
@@ -224,27 +146,14 @@
             cursor: pointer;
             transition: all 0.18s;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        .btn-primary {
-            background: var(--gold);
-            color: var(--white);
-        }
-        .btn-primary:hover {
-            background: #b8831f;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(201,146,42,0.3);
-        }
-
-        .btn-secondary {
-            background: var(--gold-pale);
-            color: var(--gold);
-            border: 1.5px solid var(--gold-muted);
-        }
-        .btn-secondary:hover {
-            background: var(--gold-muted);
-            color: var(--white);
-        }
+        .btn-primary { background: var(--gold); color: var(--white); }
+        .btn-primary:hover { background: #b8831f; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(201,146,42,0.3); }
+        .btn-secondary { background: var(--gold-pale); color: var(--gold); border: 1.5px solid var(--gold-muted); }
+        .btn-secondary:hover { background: var(--gold-muted); color: var(--white); }
 
         .btn-locate {
             display: inline-block;
@@ -262,79 +171,28 @@
         }
         .btn-locate:hover { background: var(--gold); }
 
-        /* ─── SEARCH RESULTS ─── */
         #searchResult { margin-top: 1rem; }
-
-        .result-card {
-            background: var(--cream);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.85rem 1rem;
-            margin-bottom: 0.6rem;
-            transition: border-color 0.15s;
-        }
+        .result-card { background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 0.6rem; }
         .result-card:hover { border-color: var(--gold-muted); }
         .result-card p { font-size: 0.87rem; color: var(--ink-mid); margin-bottom: 0.25rem; line-height: 1.5; }
         .result-card strong { color: var(--ink); }
         .result-meta { font-size: 0.78rem; color: var(--ink-soft); }
 
-        /* ─── FORM ─── */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        @media (max-width: 540px) {
-            .form-grid { grid-template-columns: 1fr; }
-        }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
         .form-grid .full { grid-column: 1 / -1; }
-
         .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        .form-group label {
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--ink-soft);
-        }
-
-        #message {
-            margin-top: 0.5rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-align: center;
-            min-height: 1.2em;
-        }
-        .msg-ok  { color: #1a7a45; }
+        .form-group label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+        #message { margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600; text-align: center; min-height: 1.2em; }
+        .msg-ok { color: #1a7a45; }
         .msg-err { color: var(--red-accent); }
+        .submitter-name { margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .submitter-name label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
 
-        /* ─── TREE ─── */
-        .tree-controls {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            padding: 0.75rem 1rem;
-            background: var(--cream);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-        }
-        .tree-controls label {
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--ink-mid);
-        }
-        .tree-controls .input-field {
-            width: 80px;
-            text-align: center;
-            flex: none;
-        }
-        .tree-hint {
-            margin-left: auto;
-            font-size: 0.75rem;
-            color: var(--ink-soft);
-        }
+        .tree-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding: 0.75rem 1rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; }
+        .tree-controls label { font-size: 0.82rem; font-weight: 600; color: var(--ink-mid); }
+        .tree-controls .input-field { width: 80px; text-align: center; flex: none; }
+        .tree-hint { margin-left: auto; font-size: 0.75rem; color: var(--ink-soft); }
 
         #tree-container {
             background: var(--white);
@@ -358,85 +216,27 @@
             font-size: 0.9rem;
         }
 
-        /* ─── TABLES ─── */
         .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.88rem;
-        }
-
-        thead th {
-            padding: 0.7rem 1rem;
-            text-align: left;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: var(--ink-soft);
-            border-bottom: 2px solid var(--border);
-        }
-
-        tbody tr {
-            border-bottom: 1px solid var(--border);
-            transition: background 0.12s;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        thead th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); border-bottom: 2px solid var(--border); }
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
         tbody tr:hover { background: var(--cream); }
-        tbody td {
-            padding: 0.75rem 1rem;
-            color: var(--ink-mid);
-            vertical-align: middle;
-        }
-        tbody td:first-child {
-            font-weight: 600;
-            color: var(--ink);
-        }
+        tbody td { padding: 0.75rem 1rem; color: var(--ink-mid); vertical-align: middle; }
+        tbody td:first-child { font-weight: 600; color: var(--ink); }
 
-        /* ─── LEADERBOARD ─── */
-        .rank-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
+        .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 0.75rem; font-weight: 700; }
         .rank-1 { background: #FFD700; color: #5a4000; }
         .rank-2 { background: #C0C0C0; color: #3a3a3a; }
         .rank-3 { background: #CD7F32; color: #fff; }
         .rank-other { background: var(--border); color: var(--ink-mid); }
 
-        .submitter-name {
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-        }
-        .submitter-name label {
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--ink-soft);
-        }
-
-        /* ─── FADE-IN ANIMATION ─── */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
         .card { animation: fadeUp 0.45s ease both; }
         .card:nth-child(1) { animation-delay: 0.05s; }
         .card:nth-child(2) { animation-delay: 0.10s; }
         .card:nth-child(3) { animation-delay: 0.15s; }
         .card:nth-child(4) { animation-delay: 0.20s; }
-        .card:nth-child(5) { animation-delay: 0.25s; }
-        .card:nth-child(6) { animation-delay: 0.30s; }
 
-        /* ─── MOBILE TWEAKS ─── */
         @media (max-width: 600px) {
             .card { padding: 1.25rem; }
             .site-header { padding: 2.5rem 1.25rem 2rem; }
@@ -461,7 +261,6 @@
         }
         .modal-overlay.open { opacity: 1; pointer-events: all; }
         .modal-overlay.open .modal { transform: translateY(0) scale(1); }
-
         .modal {
             background: var(--white);
             border: 1px solid var(--border);
@@ -474,7 +273,6 @@
             transform: translateY(18px) scale(0.97);
             transition: transform 0.25s ease;
         }
-
         .modal-header {
             display: flex;
             align-items: flex-start;
@@ -483,15 +281,8 @@
             border-bottom: 1px solid var(--border);
             gap: 0.75rem;
         }
-        .modal-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: var(--ink);
-            line-height: 1.2;
-        }
+        .modal-name { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 700; color: var(--ink); line-height: 1.2; }
         .modal-meta { font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.3rem; }
-
         .modal-close {
             background: none;
             border: none;
@@ -505,28 +296,10 @@
             transition: color 0.15s, background 0.15s;
         }
         .modal-close:hover { color: var(--ink); background: var(--cream); }
-
         .modal-body { padding: 1.4rem 1.5rem; }
-
-        .modal-section-label {
-            display: block;
-            font-size: 0.73rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.09em;
-            color: var(--ink-soft);
-            margin-bottom: 0.5rem;
-        }
-
-        .bio-view {
-            font-size: 0.9rem;
-            line-height: 1.75;
-            color: var(--ink-mid);
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
+        .modal-section-label { display: block; font-size: 0.73rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-soft); margin-bottom: 0.5rem; }
+        .bio-view { font-size: 0.9rem; line-height: 1.75; color: var(--ink-mid); white-space: pre-wrap; word-break: break-word; }
         .bio-empty { font-style: italic; color: var(--ink-soft); }
-
         .modal-textarea {
             width: 100%;
             min-height: 120px;
@@ -540,12 +313,7 @@
             resize: vertical;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .modal-textarea:focus {
-            outline: none;
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
-        }
-
+        .modal-textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,146,42,0.12); }
         .modal-footer {
             display: flex;
             align-items: center;
@@ -553,71 +321,42 @@
             padding: 1rem 1.5rem 1.4rem;
             border-top: 1px solid var(--border);
         }
-        .modal-save-msg {
-            font-size: 0.82rem;
-            font-weight: 600;
-            margin-right: auto;
-            min-height: 1.2em;
-        }
-
-        /* subtle glow on node hover */
-        .node:hover rect {
-            filter: drop-shadow(0 0 7px rgba(201,146,42,0.55)) !important;
-            cursor: pointer;
-        }
-
-        /* nodes with a saved bio get a small indicator dot */
-        .node-has-bio rect {
-            stroke: var(--gold) !important;
-            stroke-width: 2 !important;
-        }
+        .modal-save-msg { font-size: 0.82rem; font-weight: 600; margin-right: auto; min-height: 1.2em; }
+        .node:hover rect { filter: drop-shadow(0 0 7px rgba(201,146,42,0.55)) !important; cursor: pointer; }
+        .node-has-bio rect { stroke: var(--gold) !important; stroke-width: 2 !important; }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
     <header class="site-header">
-        <p class="header-eyebrow">Cornell University · Since 1905</p>
-        <h1>Seal <span>&</span> Serpent</h1>
-        <div class="header-rule"><span>⬥</span></div>
+        <p class="header-eyebrow">Cornell University &middot; Since 1905</p>
+        <h1>Seal <span>&amp;</span> Serpent</h1>
+        <div class="header-rule"><span>&#x2B25;</span></div>
         <p class="header-eyebrow" style="margin-bottom:0">Lineage Tree</p>
-
         <div style="margin-top: 1.5rem;">
-            <p class="header-desc">
-                A living record of our society's lineages. Enter what you know from your own memory or black book.
-                Use the search box to find a member and locate them in the tree.
-            </p>
-            <p class="header-desc" style="margin-top:0.5rem;">
-                Questions? Email <a href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a>
-            </p>
-            <span class="header-sig">— Aaron Harnish, Class of 2027</span>
+            <p class="header-desc">A living record of our society's lineages. Enter what you know from your own memory or black book. Use the search box to find a member and locate them in the tree.</p>
+            <p class="header-desc" style="margin-top:0.5rem;">Questions? Email <a href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a></p>
+            <span class="header-sig">&mdash; Aaron Harnish, Class of 2027</span>
         </div>
     </header>
 
     <main class="page-content">
-
-        <!-- Row 1: Search + Add Entry -->
         <div class="two-col">
-
-            <!-- Search -->
             <div class="card" id="searchSection">
-                <h2 class="card-title"><span class="card-title-icon">🔍</span> Find a Member</h2>
+                <h2 class="card-title"><span>&#128269;</span> Find a Member</h2>
                 <div class="input-wrap">
-                    <input type="text" id="searchName" class="input-field" placeholder="Enter a name…">
+                    <input type="text" id="searchName" class="input-field" placeholder="Enter a name&hellip;">
                     <button type="button" id="searchButton" class="btn btn-primary">Search</button>
                 </div>
                 <div id="searchResult"></div>
             </div>
 
-            <!-- Add Entry -->
             <div class="card">
-                <h2 class="card-title"><span class="card-title-icon">✦</span> Add New Entry</h2>
-
+                <h2 class="card-title"><span>&#10022;</span> Add New Entry</h2>
                 <div class="submitter-name">
                     <label for="submitterName">Your name (for leaderboard)</label>
                     <input type="text" id="submitterName" class="input-field" placeholder="e.g. Edward Tinkham">
                 </div>
-
                 <form id="memberForm">
                     <div class="form-grid">
                         <div class="form-group full">
@@ -633,70 +372,49 @@
                             <input type="text" id="bigName" class="input-field" placeholder="e.g. Cedric Orton" required>
                         </div>
                     </div>
-                    <button type="button" id="addEntryButton" class="btn btn-primary" style="width:100%;margin-top:1rem;height:46px;font-size:0.95rem;">
-                        Add Entry
-                    </button>
+                    <button type="button" id="addEntryButton" class="btn btn-primary" style="width:100%;margin-top:1rem;height:46px;font-size:0.95rem;">Add Entry</button>
                     <p id="message"></p>
                 </form>
             </div>
         </div>
 
-        <!-- Family Tree -->
         <div class="card" id="familyTreeSection">
-            <h2 class="card-title"><span class="card-title-icon">🌳</span> Family Tree</h2>
+            <h2 class="card-title"><span>&#127795;</span> Family Tree</h2>
             <div class="tree-controls">
                 <label for="minTreeSize">Min. tree size:</label>
                 <input type="number" id="minTreeSize" value="1" min="1" class="input-field">
                 <button id="applyFilter" class="btn btn-secondary">Update View</button>
-                <span class="tree-hint">Scroll to zoom · Drag to pan</span>
+                <span class="tree-hint">Scroll to zoom &middot; Drag to pan &middot; Click a tile to view/add bio</span>
             </div>
             <div id="tree-container">
-                <span class="loading-msg">Loading tree…</span>
+                <span class="loading-msg">Loading tree&hellip;</span>
             </div>
         </div>
 
-        <!-- Row 3: Recent + Leaderboard -->
         <div class="two-col">
-
-            <!-- Recent Entries -->
             <div class="card" id="recentEntriesSection">
-                <h2 class="card-title"><span class="card-title-icon">🕐</span> Recently Added</h2>
+                <h2 class="card-title"><span>&#128336;</span> Recently Added</h2>
                 <div class="table-wrap">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Member</th>
-                                <th>Class</th>
-                                <th>Big</th>
-                                <th>Added by</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Member</th><th>Class</th><th>Big</th><th>Added by</th></tr></thead>
                         <tbody id="recent-entries-body">
-                            <tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:1.5rem">Loading…</td></tr>
+                            <tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:1.5rem">Loading&hellip;</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Leaderboard -->
             <div class="card" id="leaderboard">
-                <h2 class="card-title"><span class="card-title-icon">🏆</span> Top Contributors</h2>
+                <h2 class="card-title"><span>&#127942;</span> Top Contributors</h2>
                 <div class="table-wrap">
                     <table>
-                        <thead>
-                            <tr>
-                                <th style="width:50px">Rank</th>
-                                <th>Name</th>
-                                <th>Entries</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th style="width:50px">Rank</th><th>Name</th><th>Entries</th></tr></thead>
                         <tbody id="leaderboard-body">
-                            <tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:1.5rem">Loading…</td></tr>
+                            <tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:1.5rem">Loading&hellip;</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -708,13 +426,11 @@
                     <div class="modal-name" id="modalName"></div>
                     <div class="modal-meta" id="modalMeta"></div>
                 </div>
-                <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+                <button class="modal-close" id="modalClose" aria-label="Close">&#x2715;</button>
             </div>
             <div class="modal-body">
                 <span class="modal-section-label">Biography</span>
-                <!-- View mode -->
                 <div id="bioView" class="bio-view"></div>
-                <!-- Edit mode (hidden by default) -->
                 <textarea id="bioTextarea" class="modal-textarea" placeholder="Write a short bio — class year, hometown, major, roles in the society, fun facts…" style="display:none"></textarea>
             </div>
             <div class="modal-footer">
@@ -726,31 +442,22 @@
         </div>
     </div>
 
-    <!-- Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import {
-            getFirestore, addDoc, collection, query, where,
-            getDocs, orderBy, limit, doc, setDoc, getDoc,
-        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-        const firebaseConfig = {
+    <!-- Firebase compat SDK (works on all static hosts) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script>
+        firebase.initializeApp({
             apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w",
             authDomain: "seal-data-collection.firebaseapp.com",
             projectId: "seal-data-collection",
             storageBucket: "seal-data-collection.appspot.com",
             messagingSenderId: "17642329541",
-            appId: "1:17642329541:web:39d214d2f5c8b01ce2a7ac",
-            measurementId: "G-BMCBQ5S8QV"
-        };
+            appId: "1:17642329541:web:39d214d2f5c8b01ce2a7ac"
+        });
+        const db = firebase.firestore();
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        let globalSvg = null;
-        let globalZoom = null;
-        let cachedMembers = [];
-        let cachedProfiles = {}; // name -> { bio }
+        let globalSvg = null, globalZoom = null;
+        let cachedMembers = [], cachedProfiles = {};
 
         document.addEventListener("DOMContentLoaded", () => {
             const saved = localStorage.getItem('submitterName');
@@ -758,14 +465,10 @@
 
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
-            document.getElementById("searchName").addEventListener("keydown", e => {
-                if (e.key === "Enter") searchMember();
-            });
+            document.getElementById("searchName").addEventListener("keydown", e => { if (e.key === "Enter") searchMember(); });
             document.getElementById("applyFilter").addEventListener("click", () => {
                 reloadTreeFromCache(parseInt(document.getElementById("minTreeSize").value) || 1);
             });
-
-            // Modal wiring
             document.getElementById("modalClose").addEventListener("click", closeModal);
             document.getElementById("profileModal").addEventListener("click", e => {
                 if (e.target === document.getElementById("profileModal")) closeModal();
@@ -786,60 +489,37 @@
             const gradYear      = document.getElementById("gradYear").value.trim();
             const submitterName = document.getElementById("submitterName").value.trim();
             const msgEl         = document.getElementById("message");
+            const setMsg = (txt, ok) => { msgEl.textContent = txt; msgEl.className = ok ? 'msg-ok' : 'msg-err'; };
 
-            const setMsg = (txt, ok) => {
-                msgEl.textContent = txt;
-                msgEl.className = ok ? 'msg-ok' : 'msg-err';
-            };
-
-            if (!memberName || !bigName || !gradYear || !submitterName)
-                return setMsg("All fields are required.", false);
-            if (!/^\d{4}$/.test(gradYear))
-                return setMsg("Graduation year must be 4 digits.", false);
-            if (!/^[a-zA-Z\s'\-]+$/.test(memberName) ||
-                !/^[a-zA-Z\s'\-]+$/.test(bigName) ||
-                !/^[a-zA-Z\s'\-]+$/.test(submitterName))
+            if (!memberName || !bigName || !gradYear || !submitterName) return setMsg("All fields are required.", false);
+            if (!/^\d{4}$/.test(gradYear)) return setMsg("Graduation year must be 4 digits.", false);
+            if (!/^[a-zA-Z\s'\-]+$/.test(memberName) || !/^[a-zA-Z\s'\-]+$/.test(bigName) || !/^[a-zA-Z\s'\-]+$/.test(submitterName))
                 return setMsg("Names may only contain letters, spaces, or hyphens.", false);
 
             localStorage.setItem('submitterName', submitterName);
-
             try {
-                const dup = await getDocs(query(collection(db,"mentorship"), where("memberName","==",memberName)));
+                const dup = await db.collection("mentorship").where("memberName","==",memberName).get();
                 if (!dup.empty) return setMsg("Member already exists.", false);
-
-                await addDoc(collection(db,"mentorship"), {
-                    memberName, gradYear, bigName, submittedBy: submitterName, timestamp: new Date()
-                });
-
+                await db.collection("mentorship").add({ memberName, gradYear, bigName, submittedBy: submitterName, timestamp: new Date() });
                 setMsg("Entry added!", true);
                 document.getElementById("memberForm").reset();
                 loadLeaderboard(); loadRecentEntries(); loadFamilyTree();
-            } catch (err) {
-                console.error(err);
-                setMsg("Error adding entry.", false);
-            }
+            } catch(err) { console.error(err); setMsg("Error adding entry.", false); }
         }
 
         // ─── LEADERBOARD ───
         async function loadLeaderboard() {
             const tbody = document.getElementById("leaderboard-body");
             try {
-                const snap = await getDocs(collection(db,"mentorship"));
+                const snap = await db.collection("mentorship").get();
                 const counts = {};
-                snap.forEach(d => {
-                    const s = d.data().submittedBy || "Anonymous";
-                    counts[s] = (counts[s] || 0) + 1;
-                });
+                snap.forEach(d => { const s = d.data().submittedBy || "Anonymous"; counts[s] = (counts[s]||0)+1; });
                 const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
                 tbody.innerHTML = "";
                 sorted.forEach(([name,count], i) => {
                     const cls = ["rank-1","rank-2","rank-3"][i] || "rank-other";
                     const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td><span class="rank-badge ${cls}">${i+1}</span></td>
-                        <td>${name}</td>
-                        <td style="font-weight:600">${count}</td>
-                    `;
+                    tr.innerHTML = `<td><span class="rank-badge ${cls}">${i+1}</span></td><td>${name}</td><td style="font-weight:600">${count}</td>`;
                     tbody.appendChild(tr);
                 });
             } catch(e) { console.error(e); }
@@ -849,22 +529,13 @@
         async function loadRecentEntries() {
             const tbody = document.getElementById("recent-entries-body");
             try {
-                const q = query(collection(db,"mentorship"), orderBy("timestamp","desc"), limit(5));
-                const snap = await getDocs(q);
+                const snap = await db.collection("mentorship").orderBy("timestamp","desc").limit(5).get();
                 tbody.innerHTML = "";
-                if (snap.empty) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:1.5rem">No entries yet.</td></tr>`;
-                    return;
-                }
+                if (snap.empty) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:1.5rem">No entries yet.</td></tr>`; return; }
                 snap.forEach(doc => {
                     const d = doc.data();
                     const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${d.memberName}</td>
-                        <td>${d.gradYear}</td>
-                        <td>${d.bigName}</td>
-                        <td style="color:var(--ink-soft)">${d.submittedBy}</td>
-                    `;
+                    tr.innerHTML = `<td>${d.memberName}</td><td>${d.gradYear}</td><td>${d.bigName}</td><td style="color:var(--ink-soft)">${d.submittedBy}</td>`;
                     tbody.appendChild(tr);
                 });
             } catch(e) {
@@ -879,28 +550,15 @@
             const res = document.getElementById("searchResult");
             res.innerHTML = "";
             if (!val) return;
-
-            if (cachedMembers.length === 0) {
-                res.innerHTML = `<p style="color:var(--ink-soft);font-size:0.85rem;margin-top:0.5rem">Data still loading…</p>`;
-                return;
-            }
-
+            if (cachedMembers.length === 0) { res.innerHTML = `<p style="color:var(--ink-soft);font-size:0.85rem;margin-top:0.5rem">Data still loading&hellip;</p>`; return; }
             const results = cachedMembers.filter(d => d.memberName.toLowerCase().includes(val));
-            if (!results.length) {
-                res.innerHTML = `<p style="color:var(--red-accent);font-size:0.85rem;margin-top:0.5rem">No member found.</p>`;
-                return;
-            }
-
+            if (!results.length) { res.innerHTML = `<p style="color:var(--red-accent);font-size:0.85rem;margin-top:0.5rem">No member found.</p>`; return; }
             results.slice(0,10).forEach(d => {
                 const card = document.createElement('div');
                 card.className = "result-card";
-                card.innerHTML = `
-                    <p><strong>${d.memberName}</strong></p>
-                    <p>Class of ${d.gradYear} &nbsp;·&nbsp; Big: ${d.bigName}</p>
-                    <p class="result-meta">Added by ${d.submittedBy}</p>
-                `;
+                card.innerHTML = `<p><strong>${d.memberName}</strong></p><p>Class of ${d.gradYear} &nbsp;&middot;&nbsp; Big: ${d.bigName}</p><p class="result-meta">Added by ${d.submittedBy}</p>`;
                 const btn = document.createElement('button');
-                btn.textContent = "Locate in tree →";
+                btn.textContent = "Locate in tree \u2192";
                 btn.className = "btn-locate";
                 btn.onclick = () => zoomToMember(d.memberName);
                 card.appendChild(btn);
@@ -912,66 +570,39 @@
         function zoomToMember(name) {
             if (!globalSvg || !globalZoom) return alert("Tree not loaded.");
             let target = null;
-            d3.selectAll(".node").each(function(d) {
-                if (d.data.name === name) target = d;
-            });
+            d3.selectAll(".node").each(function(d) { if (d.data.name === name) target = d; });
             if (!target) return alert(`"${name}" is hidden by the current Min Tree Size filter.`);
-
             const cont = document.getElementById("tree-container");
-            const w = cont.clientWidth, h = cont.clientHeight;
-            const scale = 2;
+            const w = cont.clientWidth, h = cont.clientHeight, scale = 2;
             globalSvg.transition().duration(900)
-                .call(globalZoom.transform, d3.zoomIdentity
-                    .translate(w/2 - target.x*scale, h/2 - target.y*scale)
-                    .scale(scale));
-
-            d3.selectAll(".node rect").attr("stroke","#ddd").attr("stroke-width",1);
+                .call(globalZoom.transform, d3.zoomIdentity.translate(w/2 - target.x*scale, h/2 - target.y*scale).scale(scale));
+            d3.selectAll(".node rect").attr("stroke","#C9922A").attr("stroke-width",1);
             d3.selectAll(".node").filter(d => d.data.name === name).select("rect")
                 .transition().duration(400).attr("stroke","#C0392B").attr("stroke-width",3)
-                .transition().delay(2200).duration(500).attr("stroke","#ddd").attr("stroke-width",1);
-
+                .transition().delay(2200).duration(500).attr("stroke","#C9922A").attr("stroke-width",1);
             document.getElementById("familyTreeSection").scrollIntoView({behavior:"smooth"});
         }
 
         // ─── PROFILE MODAL ───
         let currentModalMember = null;
 
-        async function openModal(memberData) {
+        function openModal(memberData) {
             currentModalMember = memberData;
             document.getElementById("modalName").textContent = memberData.name;
             document.getElementById("modalMeta").textContent =
                 [memberData.year && memberData.year !== 'N/A' ? `Class of ${memberData.year}` : null,
-                 memberData.big ? `Big: ${memberData.big}` : null]
-                .filter(Boolean).join('  ·  ');
-
-            // Reset to view mode
+                 memberData.big ? `Big: ${memberData.big}` : null].filter(Boolean).join('  \u00b7  ');
             exitEditMode();
             document.getElementById("modalSaveMsg").textContent = "";
-
-            // Load bio
-            const bioView = document.getElementById("bioView");
-            bioView.innerHTML = `<span style="color:var(--ink-soft);font-size:0.85rem">Loading…</span>`;
+            renderBioView(cachedProfiles[memberData.name]?.bio || "");
             document.getElementById("profileModal").classList.add("open");
             document.body.style.overflow = "hidden";
-
-            try {
-                const profile = cachedProfiles[memberData.name];
-                const bio = profile?.bio || "";
-                renderBioView(bio);
-            } catch(e) {
-                renderBioView("");
-            }
         }
 
         function renderBioView(bio) {
-            const bioView = document.getElementById("bioView");
-            if (bio) {
-                bioView.className = "bio-view";
-                bioView.textContent = bio;
-            } else {
-                bioView.className = "bio-view bio-empty";
-                bioView.textContent = "No bio yet. Click "Edit Bio" to add one.";
-            }
+            const el = document.getElementById("bioView");
+            if (bio) { el.className = "bio-view"; el.textContent = bio; }
+            else { el.className = "bio-view bio-empty"; el.textContent = 'No bio yet. Click "Edit Bio" to add one.'; }
         }
 
         function closeModal() {
@@ -981,8 +612,7 @@
         }
 
         function enterEditMode() {
-            const bio = cachedProfiles[currentModalMember?.name]?.bio || "";
-            document.getElementById("bioTextarea").value = bio;
+            document.getElementById("bioTextarea").value = cachedProfiles[currentModalMember?.name]?.bio || "";
             document.getElementById("bioView").style.display = "none";
             document.getElementById("bioTextarea").style.display = "block";
             document.getElementById("modalEditBtn").style.display = "none";
@@ -1005,36 +635,23 @@
             const bio = document.getElementById("bioTextarea").value.trim();
             const msgEl = document.getElementById("modalSaveMsg");
             msgEl.style.color = "var(--ink-soft)";
-            msgEl.textContent = "Saving…";
-
+            msgEl.textContent = "Saving\u2026";
             try {
-                const docRef = doc(db, "memberProfiles", currentModalMember.name);
-                await setDoc(docRef, { bio, updatedAt: new Date() }, { merge: true });
-
-                // Update cache
+                await db.collection("memberProfiles").doc(currentModalMember.name).set({ bio, updatedAt: new Date() }, { merge: true });
                 cachedProfiles[currentModalMember.name] = { bio };
-
-                // Update node appearance in tree
-                d3.selectAll(".node")
-                    .filter(d => d.data.name === currentModalMember.name)
-                    .classed("node-has-bio", bio.length > 0);
-
+                d3.selectAll(".node").filter(d => d.data.name === currentModalMember.name).classed("node-has-bio", bio.length > 0);
                 renderBioView(bio);
                 exitEditMode();
                 msgEl.style.color = "#1a7a45";
                 msgEl.textContent = "Saved!";
                 setTimeout(() => { msgEl.textContent = ""; }, 2500);
-            } catch(e) {
-                console.error(e);
-                msgEl.style.color = "var(--red-accent)";
-                msgEl.textContent = "Error saving.";
-            }
+            } catch(e) { console.error(e); msgEl.style.color = "var(--red-accent)"; msgEl.textContent = "Error saving."; }
         }
 
         // ─── LOAD PROFILES ───
         async function loadAllProfiles() {
             try {
-                const snap = await getDocs(collection(db, "memberProfiles"));
+                const snap = await db.collection("memberProfiles").get();
                 snap.forEach(d => { cachedProfiles[d.id] = d.data(); });
             } catch(e) { console.error("Profiles load error:", e); }
         }
@@ -1043,14 +660,9 @@
         async function loadFamilyTree() {
             const cont = document.getElementById("tree-container");
             try {
-                const [snap] = await Promise.all([
-                    getDocs(collection(db,"mentorship")),
-                    loadAllProfiles()
-                ]);
-                if (snap.empty) {
-                    cont.innerHTML = `<span class="loading-msg">No members yet — add one above!</span>`;
-                    return;
-                }
+                await loadAllProfiles();
+                const snap = await db.collection("mentorship").get();
+                if (snap.empty) { cont.innerHTML = `<span class="loading-msg">No members yet \u2014 add one above!</span>`; return; }
                 cachedMembers = [];
                 snap.forEach(d => cachedMembers.push(d.data()));
                 reloadTreeFromCache(parseInt(document.getElementById("minTreeSize").value) || 1);
@@ -1064,34 +676,23 @@
             const cont = document.getElementById("tree-container");
             cont.innerHTML = "";
             const data = buildData(cachedMembers, minSize);
-            if (!data) {
-                cont.innerHTML = `<span class="loading-msg">No trees with ≥ ${minSize} members. Lower the filter.</span>`;
-                return;
-            }
+            if (!data) { cont.innerHTML = `<span class="loading-msg">No trees with \u2265 ${minSize} members. Lower the filter.</span>`; return; }
             renderTree(data, cont);
         }
 
         function buildData(members, minSize) {
             const map = new Map();
-            members.forEach(m => map.set(m.memberName, {
-                id: m.memberName, name: m.memberName, year: m.gradYear, big: m.bigName, children: []
-            }));
+            members.forEach(m => map.set(m.memberName, { id: m.memberName, name: m.memberName, year: m.gradYear, big: m.bigName, children: [] }));
             const roots = new Map(map);
-
             map.forEach(node => {
                 if (!node.big) return;
                 const bigNode = map.get(node.big);
-                if (bigNode) {
-                    bigNode.children.push(node);
-                    roots.delete(node.id);
-                } else {
+                if (bigNode) { bigNode.children.push(node); roots.delete(node.id); }
+                else {
                     const dummy = { id: node.big, name: node.big, year:'N/A', big:null, children:[node], isDummy:true };
-                    map.set(dummy.id, dummy);
-                    roots.set(dummy.id, dummy);
-                    roots.delete(node.id);
+                    map.set(dummy.id, dummy); roots.set(dummy.id, dummy); roots.delete(node.id);
                 }
             });
-
             let finalRoots = Array.from(roots.values()).filter(r => getTreeSize(r) >= minSize);
             if (!finalRoots.length) return null;
             if (finalRoots.length === 1) return finalRoots[0];
@@ -1105,55 +706,32 @@
         }
 
         function renderTree(data, container) {
-            const w = container.clientWidth;
-            const h = container.clientHeight;
-
-            globalSvg = d3.select(container).append("svg")
-                .attr("width", w).attr("height", h)
-                .style("touch-action","none");
-
+            const w = container.clientWidth, h = container.clientHeight;
+            globalSvg = d3.select(container).append("svg").attr("width",w).attr("height",h).style("touch-action","none");
             const g = globalSvg.append("g");
-
             const treeLayout = d3.tree().nodeSize([190, 110]);
             const root = d3.hierarchy(data);
             treeLayout(root);
-
             let minX=Infinity, maxX=-Infinity, minY=Infinity;
-            root.each(d => {
-                if(d.x<minX)minX=d.x; if(d.x>maxX)maxX=d.x; if(d.y<minY)minY=d.y;
-            });
-            const midX = (minX+maxX)/2;
-            const tW = maxX-minX, tH = root.height*110;
+            root.each(d => { if(d.x<minX)minX=d.x; if(d.x>maxX)maxX=d.x; if(d.y<minY)minY=d.y; });
+            const midX=(minX+maxX)/2, tW=maxX-minX, tH=root.height*110;
             let scale = Math.min(w/(tW+200), h/(tH+200));
             scale = Math.max(0.15, Math.min(scale, 1));
-
-            const initT = d3.zoomIdentity.translate(w/2, 50).scale(scale).translate(-midX, -minY);
-
+            const initT = d3.zoomIdentity.translate(w/2,50).scale(scale).translate(-midX,-minY);
             globalZoom = d3.zoom().scaleExtent([0.08,3]).on("zoom", e => g.attr("transform", e.transform));
             globalSvg.call(globalZoom).call(globalZoom.transform, initT);
 
-            // Links
-            g.selectAll(".link")
-                .data(root.links())
-                .enter().append("path")
-                .attr("fill","none")
-                .attr("stroke","#E5D9BF")
-                .attr("stroke-width",1.5)
+            g.selectAll(".link").data(root.links()).enter().append("path")
+                .attr("fill","none").attr("stroke","#E5D9BF").attr("stroke-width",1.5)
                 .attr("d", d3.linkVertical().x(d=>d.x).y(d=>d.y));
 
-            // Nodes
             const nodes = g.selectAll(".node")
                 .data(root.descendants().filter(d => !d.data.isRoot))
                 .enter().append("g")
-                .attr("class", d => {
-                    const hasBio = cachedProfiles[d.data.name]?.bio;
-                    return "node" + (hasBio ? " node-has-bio" : "");
-                })
-                .attr("transform", d=>`translate(${d.x},${d.y})`)
+                .attr("class", d => "node" + (cachedProfiles[d.data.name]?.bio ? " node-has-bio" : ""))
+                .attr("transform", d => `translate(${d.x},${d.y})`)
                 .style("cursor","pointer")
-                .on("click", function(event, d) {
-                    if (!d.data.isRoot) openModal(d.data);
-                });
+                .on("click", function(event, d) { if (!d.data.isRoot) openModal(d.data); });
 
             nodes.append("rect")
                 .attr("x",-80).attr("y",-28).attr("width",160).attr("height",56)
@@ -1164,17 +742,17 @@
                 .style("filter","drop-shadow(0 2px 4px rgba(26,21,16,0.08))");
 
             nodes.append("text")
-                .attr("dy","-0.15em")
-                .attr("text-anchor","middle")
-                .style("font-family","'DM Sans',sans-serif")
-                .style("font-size","13px")
-                .style("font-weight","600")
-                .attr("fill", d => d.data.isDummy ? "#ecf0f1" : "var(--ink)")
+                .attr("dy","-0.15em").attr("text-anchor","middle")
+                .style("font-family","'DM Sans',sans-serif").style("font-size","13px").style("font-weight","600")
+                .attr("fill", d => d.data.isDummy ? "#ecf0f1" : "#1A1510")
                 .text(d => d.data.name);
 
             nodes.append("text")
-                .attr("dy","1.1em")
-                .attr("text-anchor","middle")
-                .style("font-family","'DM Sans',sans-serif")
-                .style("font-size","11px")
-        
+                .attr("dy","1.1em").attr("text-anchor","middle")
+                .style("font-family","'DM Sans',sans-serif").style("font-size","11px")
+                .attr("fill", d => d.data.isDummy ? "#bdc3c7" : "#8A7A65")
+                .text(d => d.data.year === 'N/A' ? 'Unlisted Big' : (d.data.year ? `'${String(d.data.year).slice(2)}` : ''));
+        }
+    </script>
+</body>
+</html>
