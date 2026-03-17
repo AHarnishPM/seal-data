@@ -1,279 +1,586 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seal and Serpent Lineage Tracker</title>
-    <!-- Icon for chrome bar -->
+    <title>Seal & Serpent — Lineage Tree</title>
     <link rel="icon" type="image/png" href="seal.png">
-    <!-- Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
-        /* 
-           Background: #FFF9C4 (Light Yellow)
-           Headings: #F57F17 (Dark Gold)
-           Buttons/Nodes: #FBC02D (Medium Yellow)
-        */
+        :root {
+            --gold:       #C9922A;
+            --gold-light: #F2C96B;
+            --gold-pale:  #FBF0D0;
+            --gold-muted: #E8C97A;
+            --cream:      #FDFAF2;
+            --ink:        #1A1510;
+            --ink-mid:    #4A3F30;
+            --ink-soft:   #8A7A65;
+            --border:     #E5D9BF;
+            --white:      #FFFFFF;
+            --red-accent: #C0392B;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #FFF9C4;
-            color: #333;
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* ─── TEXTURES & ATMOSPHERE ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,146,42,0.07) 0%, transparent 70%),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9922A' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #FFF9C4;
+        /* ─── HEADER ─── */
+        .site-header {
+            position: relative;
+            text-align: center;
+            padding: 4rem 2rem 3rem;
+            border-bottom: 1px solid var(--border);
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #FBC02D;
-            border-radius: 4px;
+        .site-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--gold);
+            border-radius: 2px;
         }
 
-        h1,
-        h2 {
-            color: #F57F17;
+        .header-eyebrow {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            font-size: 0.7rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 0.75rem;
         }
 
-        h1 {
+        .site-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 6vw, 4rem);
+            font-weight: 900;
+            color: var(--ink);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .site-header h1 span {
+            color: var(--gold);
+        }
+
+        .header-rule {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem auto;
+            max-width: 360px;
+        }
+
+        .header-rule::before, .header-rule::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .header-rule span {
+            font-size: 1rem;
+            color: var(--gold-muted);
+        }
+
+        .header-desc {
+            max-width: 520px;
+            margin: 0 auto;
+            font-size: 0.93rem;
+            line-height: 1.75;
+            color: var(--ink-mid);
+        }
+
+        .header-desc a {
+            color: var(--gold);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .header-sig {
+            display: inline-block;
+            margin-top: 1rem;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: var(--ink-soft);
+            font-size: 0.9rem;
+        }
+
+        /* ─── LAYOUT ─── */
+        .page-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* ─── CARDS ─── */
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 16px rgba(26,21,16,0.05);
+            transition: box-shadow 0.2s;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
             font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
         }
 
-        h2 {
+        .card-title-icon {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        /* ─── TWO-COL GRID ON DESKTOP ─── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 720px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        /* ─── SEARCH ─── */
+        .input-wrap {
+            position: relative;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-field {
+            flex: 1;
+            height: 44px;
+            padding: 0 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--ink);
+            background: var(--cream);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
+        }
+
+        .input-field::placeholder { color: var(--ink-soft); }
+
+        .btn {
+            height: 44px;
+            padding: 0 1.25rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
             font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
         }
 
-        /* Gold Button Style */
-        .btn-gold {
-            background-color: #FBC02D;
-            color: white;
-            transition: background-color 0.2s;
+        .btn-primary {
+            background: var(--gold);
+            color: var(--white);
+        }
+        .btn-primary:hover {
+            background: #b8831f;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(201,146,42,0.3);
         }
 
-        .btn-gold:hover {
-            background-color: #F9A825;
+        .btn-secondary {
+            background: var(--gold-pale);
+            color: var(--gold);
+            border: 1.5px solid var(--gold-muted);
+        }
+        .btn-secondary:hover {
+            background: var(--gold-muted);
+            color: var(--white);
         }
 
-        /* Tree Container */
+        .btn-locate {
+            display: inline-block;
+            margin-top: 0.6rem;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.8rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            background: var(--ink);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-locate:hover { background: var(--gold); }
+
+        /* ─── SEARCH RESULTS ─── */
+        #searchResult { margin-top: 1rem; }
+
+        .result-card {
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 0.6rem;
+            transition: border-color 0.15s;
+        }
+        .result-card:hover { border-color: var(--gold-muted); }
+        .result-card p { font-size: 0.87rem; color: var(--ink-mid); margin-bottom: 0.25rem; line-height: 1.5; }
+        .result-card strong { color: var(--ink); }
+        .result-meta { font-size: 0.78rem; color: var(--ink-soft); }
+
+        /* ─── FORM ─── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 540px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        .form-grid .full { grid-column: 1 / -1; }
+
+        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .form-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--ink-soft);
+        }
+
+        #message {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            min-height: 1.2em;
+        }
+        .msg-ok  { color: #1a7a45; }
+        .msg-err { color: var(--red-accent); }
+
+        /* ─── TREE ─── */
+        .tree-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .tree-controls label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--ink-mid);
+        }
+        .tree-controls .input-field {
+            width: 80px;
+            text-align: center;
+            flex: none;
+        }
+        .tree-hint {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--ink-soft);
+        }
+
         #tree-container {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 0.5rem;
-            height: 80vh;
-            /* Responsive height */
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            height: clamp(420px, 70vh, 700px);
             width: 100%;
             overflow: hidden;
             position: relative;
             cursor: grab;
             touch-action: none;
-            /* Prevents page scrolling on mobile while dragging tree */
+        }
+        #tree-container:active { cursor: grabbing; }
+        #tree-container .loading-msg {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink-soft);
+            font-size: 0.9rem;
         }
 
-        #tree-container:active {
-            cursor: grabbing;
+        /* ─── TABLES ─── */
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
         }
 
-        /* Leaderboard Colors */
-        .gold {
-            background-color: #FFD700 !important;
-            color: #000;
+        thead th {
+            padding: 0.7rem 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--ink-soft);
+            border-bottom: 2px solid var(--border);
         }
 
-        .silver {
-            background-color: #C0C0C0 !important;
-            color: #000;
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.12s;
+        }
+        tbody tr:hover { background: var(--cream); }
+        tbody td {
+            padding: 0.75rem 1rem;
+            color: var(--ink-mid);
+            vertical-align: middle;
+        }
+        tbody td:first-child {
+            font-weight: 600;
+            color: var(--ink);
         }
 
-        .bronze {
-            background-color: #CD7F32 !important;
-            color: #fff;
+        /* ─── LEADERBOARD ─── */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .rank-1 { background: #FFD700; color: #5a4000; }
+        .rank-2 { background: #C0C0C0; color: #3a3a3a; }
+        .rank-3 { background: #CD7F32; color: #fff; }
+        .rank-other { background: var(--border); color: var(--ink-mid); }
+
+        .submitter-name {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .submitter-name label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--ink-soft);
         }
 
-        /* Form Inputs */
-        input:focus {
-            outline: 2px solid #FBC02D;
-            border-color: #FBC02D;
+        /* ─── FADE-IN ANIMATION ─── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
+        .card { animation: fadeUp 0.45s ease both; }
+        .card:nth-child(1) { animation-delay: 0.05s; }
+        .card:nth-child(2) { animation-delay: 0.10s; }
+        .card:nth-child(3) { animation-delay: 0.15s; }
+        .card:nth-child(4) { animation-delay: 0.20s; }
+        .card:nth-child(5) { animation-delay: 0.25s; }
+        .card:nth-child(6) { animation-delay: 0.30s; }
 
-        /* Card Style */
-        .content-box {
-            background-color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border-radius: 0.5rem;
-            padding: 2rem;
-            margin-bottom: 2rem;
+        /* ─── MOBILE TWEAKS ─── */
+        @media (max-width: 600px) {
+            .card { padding: 1.25rem; }
+            .site-header { padding: 2.5rem 1.25rem 2rem; }
+            .page-content { padding: 1.5rem 1rem 4rem; }
         }
     </style>
 </head>
-
 <body>
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
 
-        <!-- Header -->
-        <header class="text-center mb-10 max-w-3xl mx-auto">
-            <h1 class="text-4xl md:text-5xl mb-6">Seal and Serpent Lineage Tree</h1>
-            <div class="space-y-4 text-gray-700 text-lg">
-                <p>I created this tree and form in an effort to track lineages back as far as possible and make some
-                    cool graphs
-                    of our society over time to share with actives and alumni.</p>
-                <p>Please enter information in the form below the tree for any members whom you know or have a black
-                    book containing, following the
-                    formatting outlined in grey inside the boxes.</p>
-                <p>Use the "Search for a Member" box to find a member, and click the "Locate in tree" button on their
-                    result to see them in the tree!</p>
-                <p class="text-sm">Thank you for helping! Questions? Email <a href="mailto:ajh374@cornell.edu"
-                        class="text-blue-600 hover:underline">ajh374@cornell.edu</a></p>
-                <p class="font-bold">- Aaron Harnish, 2027</p>
-            </div>
-        </header>
+    <!-- Header -->
+    <header class="site-header">
+        <p class="header-eyebrow">Cornell University · Since 1905</p>
+        <h1>Seal <span>&</span> Serpent</h1>
+        <div class="header-rule"><span>⬥</span></div>
+        <p class="header-eyebrow" style="margin-bottom:0">Lineage Tree</p>
 
-        <!-- Search Box -->
-        <section id="searchSection" class="content-box max-w-xl mx-auto">
-            <h2 class="text-2xl text-center mb-4">Search for a Member</h2>
-            <div class="space-y-4">
-                <input type="text" id="searchName" class="w-full p-3 border border-gray-300 rounded-lg"
-                    placeholder="Enter Name to Search">
-                <button type="button" id="searchButton"
-                    class="btn-gold w-full py-3 px-4 rounded-lg font-bold shadow-md">Search</button>
-                <div id="searchResult" class="mt-4 text-left space-y-3"></div>
-            </div>
-        </section>
+        <div style="margin-top: 1.5rem;">
+            <p class="header-desc">
+                A living record of our society's lineages. Enter what you know from your own memory or black book.
+                Use the search box to find a member and locate them in the tree.
+            </p>
+            <p class="header-desc" style="margin-top:0.5rem;">
+                Questions? Email <a href="mailto:ajh374@cornell.edu">ajh374@cornell.edu</a>
+            </p>
+            <span class="header-sig">— Aaron Harnish, Class of 2027</span>
+        </div>
+    </header>
 
+    <main class="page-content">
 
+        <!-- Row 1: Search + Add Entry -->
+        <div class="two-col">
 
-        <!-- Family Tree Section -->
-        <section id="familyTreeSection" class="content-box w-full mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-                <h2 class="text-3xl text-center md:text-left">Family Tree</h2>
-                <div class="text-sm text-gray-500 mt-2 md:mt-0">
-                    Scroll to Zoom • Drag to Pan
+            <!-- Search -->
+            <div class="card" id="searchSection">
+                <h2 class="card-title"><span class="card-title-icon">🔍</span> Find a Member</h2>
+                <div class="input-wrap">
+                    <input type="text" id="searchName" class="input-field" placeholder="Enter a name…">
+                    <button type="button" id="searchButton" class="btn btn-primary">Search</button>
                 </div>
+                <div id="searchResult"></div>
             </div>
 
-            <!-- Filter Input -->
-            <div
-                class="mb-4 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <label for="minTreeSize" class="font-bold text-gray-700">Minimum Tree Size:</label>
-                <div class="relative">
-                    <input type="number" id="minTreeSize" value="1" min="1"
-                        class="w-24 p-2 border border-gray-300 rounded text-center font-semibold"
-                        title="Only show trees with at least this many members">
-                    <span class="text-xs text-gray-500 block mt-1">Show lines with ≥ X members</span>
+            <!-- Add Entry -->
+            <div class="card">
+                <h2 class="card-title"><span class="card-title-icon">✦</span> Add New Entry</h2>
+
+                <div class="submitter-name">
+                    <label for="submitterName">Your name (for leaderboard)</label>
+                    <input type="text" id="submitterName" class="input-field" placeholder="Edward Tinkham">
                 </div>
-                <button id="applyFilter" class="btn-gold px-4 py-2 rounded text-sm font-bold shadow-sm">Update
-                    View</button>
-            </div>
 
-            <div id="tree-container" class="flex items-center justify-center">
-                <span class="text-gray-400">Loading Tree...</span>
+                <form id="memberForm">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label for="memberName">Member's name</label>
+                            <input type="text" id="memberName" class="input-field" placeholder="Aaron Harnish" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gradYear">Graduation year</label>
+                            <input type="text" id="gradYear" class="input-field" placeholder="YYYY" maxlength="4" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bigName">Big's name</label>
+                            <input type="text" id="bigName" class="input-field" placeholder="Cedric Orton-Urbina" required>
+                        </div>
+                    </div>
+                    <button type="button" id="addEntryButton" class="btn btn-primary" style="width:100%;margin-top:1rem;height:46px;font-size:0.95rem;">
+                        Add Entry
+                    </button>
+                    <p id="message"></p>
+                </form>
             </div>
-        </section>
-
-        <!-- Submitter Name -->
-        <div class="max-w-xl mx-auto mb-8">
-            <label for="submitterName" class="block text-gray-700 font-bold mb-2">Your Name (for Leaderboard):</label>
-            <input type="text" id="submitterName" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                placeholder="Your Name (e.g., Edward Tinkham)" required>
         </div>
 
-        <!-- Add Entry Form -->
-        <section class="content-box max-w-xl mx-auto">
-            <h2 class="text-3xl text-center mb-6">Add New Entry</h2>
-            <form id="memberForm" class="space-y-4">
-                <div>
-                    <label for="memberName" class="block text-gray-700 font-bold mb-1">Member's Name:</label>
-                    <input type="text" id="memberName" class="w-full p-3 border border-gray-300 rounded-lg"
-                        placeholder="Member's Name (e.g., Aaron Harnish)" required>
-                </div>
-                <div>
-                    <label for="gradYear" class="block text-gray-700 font-bold mb-1">Graduation Year:</label>
-                    <input type="text" id="gradYear" class="w-full p-3 border border-gray-300 rounded-lg"
-                        placeholder="YYYY (e.g., 2027)" required>
-                </div>
-                <div>
-                    <label for="bigName" class="block text-gray-700 font-bold mb-1">Member's Big's Name:</label>
-                    <input type="text" id="bigName" class="w-full p-3 border border-gray-300 rounded-lg"
-                        placeholder="Big's Name (e.g., Cedric Orton-Urbina)" required>
-                </div>
-
-                <button type="button" id="addEntryButton"
-                    class="btn-gold w-full py-3 px-4 rounded-lg font-bold text-lg mt-4 shadow-md">Add Entry</button>
-                <p id="message" class="text-center font-bold mt-2"></p>
-            </form>
-        </section>
-
-
-
-        <!-- RECENT ENTRIES (NEW SECTION) -->
-        <section id="recentEntriesSection" class="content-box max-w-4xl mx-auto">
-            <h2 class="text-2xl text-center mb-6">Recently Added</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-700">
-                            <th class="p-3 border border-gray-200">Member Name</th>
-                            <th class="p-3 border border-gray-200">Class</th>
-                            <th class="p-3 border border-gray-200">Big's Name</th>
-                            <th class="p-3 border border-gray-200">Submitted By</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-entries-body" class="text-sm md:text-base">
-                        <!-- JS injects rows here -->
-                    </tbody>
-                </table>
+        <!-- Family Tree -->
+        <div class="card" id="familyTreeSection">
+            <h2 class="card-title"><span class="card-title-icon">🌳</span> Family Tree</h2>
+            <div class="tree-controls">
+                <label for="minTreeSize">Min. tree size:</label>
+                <input type="number" id="minTreeSize" value="1" min="1" class="input-field">
+                <button id="applyFilter" class="btn btn-secondary">Update View</button>
+                <span class="tree-hint">Scroll to zoom · Drag to pan</span>
             </div>
-        </section>
-
-        <!-- Leaderboard -->
-        <section id="leaderboard" class="content-box max-w-3xl mx-auto">
-            <h2 class="text-3xl text-center mb-6">Top Contributors</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-[#FBC02D] text-white">
-                            <th class="p-3 border border-gray-200">Rank</th>
-                            <th class="p-3 border border-gray-200">Name</th>
-                            <th class="p-3 border border-gray-200">Entries</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-body" class="text-lg">
-                        <!-- Entries inserted via JS -->
-                    </tbody>
-                </table>
+            <div id="tree-container">
+                <span class="loading-msg">Loading tree…</span>
             </div>
-        </section>
-    </div>
+        </div>
 
-    <!-- D3.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+        <!-- Row 3: Recent + Leaderboard -->
+        <div class="two-col">
 
-    <!-- Firebase SDK & Logic -->
+            <!-- Recent Entries -->
+            <div class="card" id="recentEntriesSection">
+                <h2 class="card-title"><span class="card-title-icon">🕐</span> Recently Added</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Class</th>
+                                <th>Big</th>
+                                <th>Added by</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-entries-body">
+                            <tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:1.5rem">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="card" id="leaderboard">
+                <h2 class="card-title"><span class="card-title-icon">🏆</span> Top Contributors</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:50px">Rank</th>
+                                <th>Name</th>
+                                <th>Entries</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                            <tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:1.5rem">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import {
-            getFirestore,
-            addDoc,
-            collection,
-            query,
-            where,
-            getDocs,
-            orderBy,
-            startAt,
-            endAt,
-            limit,
+            getFirestore, addDoc, collection, query, where,
+            getDocs, orderBy, limit,
         } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        // --- CONFIGURATION ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w", // <--- REPLACE THIS WITH YOUR API KEY
+            apiKey: "AIzaSyCoFenVip-lyHF3v6x7DAtrnR-KTVMlC6w",
             authDomain: "seal-data-collection.firebaseapp.com",
             projectId: "seal-data-collection",
             storageBucket: "seal-data-collection.appspot.com",
@@ -285,293 +592,209 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Global variables
         let globalSvg = null;
         let globalZoom = null;
-        let cachedMembers = []; // Store data to avoid re-fetching on filter change
+        let cachedMembers = [];
 
-        // --- MAIN LOGIC ---
         document.addEventListener("DOMContentLoaded", () => {
-            console.log("[Lineage App] App initialized.");
+            const saved = localStorage.getItem('submitterName');
+            if (saved) document.getElementById("submitterName").value = saved;
 
-            // Restore name
-            const savedName = localStorage.getItem('submitterName');
-            if (savedName) document.getElementById("submitterName").value = savedName;
-
-            // Bind buttons
             document.getElementById("addEntryButton").addEventListener("click", addEntry);
             document.getElementById("searchButton").addEventListener("click", searchMember);
-
-            // Bind Filter button
+            document.getElementById("searchName").addEventListener("keydown", e => {
+                if (e.key === "Enter") searchMember();
+            });
             document.getElementById("applyFilter").addEventListener("click", () => {
-                const minSize = parseInt(document.getElementById("minTreeSize").value) || 1;
-                reloadTreeFromCache(minSize);
+                reloadTreeFromCache(parseInt(document.getElementById("minTreeSize").value) || 1);
             });
 
-            // Load data
             loadLeaderboard();
-            loadRecentEntries(); // Load Recent Entries
+            loadRecentEntries();
             loadFamilyTree();
         });
 
-        // 1. ADD ENTRY
+        // ─── ADD ENTRY ───
         async function addEntry() {
-            const memberName = document.getElementById("memberName").value.trim();
-            const bigName = document.getElementById("bigName").value.trim();
-            const gradYear = document.getElementById("gradYear").value.trim();
+            const memberName    = document.getElementById("memberName").value.trim();
+            const bigName       = document.getElementById("bigName").value.trim();
+            const gradYear      = document.getElementById("gradYear").value.trim();
             const submitterName = document.getElementById("submitterName").value.trim();
-            const message = document.getElementById("message");
+            const msgEl         = document.getElementById("message");
 
-            // Validation
-            if (!memberName || !bigName || !gradYear || !submitterName) {
-                message.textContent = "All fields are required.";
-                message.className = "text-red-600";
-                return;
-            }
-            if (!/^\d{4}$/.test(gradYear)) {
-                message.textContent = "Graduation year must be 4 digits.";
-                message.className = "text-red-600";
-                return;
-            }
-            const namePattern = /^[a-zA-Z\s'-]+$/;
-            if (!namePattern.test(memberName) || !namePattern.test(bigName) || !namePattern.test(submitterName)) {
-                message.textContent = "Names can only contain letters, spaces, hyphens.";
-                message.className = "text-red-600";
-                return;
-            }
+            const setMsg = (txt, ok) => {
+                msgEl.textContent = txt;
+                msgEl.className = ok ? 'msg-ok' : 'msg-err';
+            };
+
+            if (!memberName || !bigName || !gradYear || !submitterName)
+                return setMsg("All fields are required.", false);
+            if (!/^\d{4}$/.test(gradYear))
+                return setMsg("Graduation year must be 4 digits.", false);
+            if (!/^[a-zA-Z\s'\-]+$/.test(memberName) ||
+                !/^[a-zA-Z\s'\-]+$/.test(bigName) ||
+                !/^[a-zA-Z\s'\-]+$/.test(submitterName))
+                return setMsg("Names may only contain letters, spaces, or hyphens.", false);
 
             localStorage.setItem('submitterName', submitterName);
 
             try {
-                // Check duplicate
-                const q = query(collection(db, "mentorship"), where("memberName", "==", memberName));
-                const snap = await getDocs(q);
-                if (!snap.empty) {
-                    message.textContent = "Member already exists.";
-                    message.className = "text-red-600";
-                    return;
-                }
+                const dup = await getDocs(query(collection(db,"mentorship"), where("memberName","==",memberName)));
+                if (!dup.empty) return setMsg("Member already exists.", false);
 
-                // Add
-                await addDoc(collection(db, "mentorship"), {
+                await addDoc(collection(db,"mentorship"), {
                     memberName, gradYear, bigName, submittedBy: submitterName, timestamp: new Date()
                 });
 
-                message.textContent = "Entry added!";
-                message.className = "text-green-600";
+                setMsg("Entry added!", true);
                 document.getElementById("memberForm").reset();
-
-                // Refresh views
-                loadLeaderboard();
-                loadRecentEntries(); // Refresh recent entries
-                loadFamilyTree();
-
-            } catch (error) {
-                console.error("[Lineage App] Add Error:", error);
-                message.textContent = "Error adding entry. Check console.";
-                message.className = "text-red-600";
+                loadLeaderboard(); loadRecentEntries(); loadFamilyTree();
+            } catch (err) {
+                console.error(err);
+                setMsg("Error adding entry.", false);
             }
         }
 
-        // 2. LEADERBOARD
+        // ─── LEADERBOARD ───
         async function loadLeaderboard() {
             const tbody = document.getElementById("leaderboard-body");
-            tbody.innerHTML = "";
             try {
-                const snap = await getDocs(collection(db, "mentorship"));
+                const snap = await getDocs(collection(db,"mentorship"));
                 const counts = {};
                 snap.forEach(d => {
                     const s = d.data().submittedBy || "Anonymous";
                     counts[s] = (counts[s] || 0) + 1;
                 });
-
-                const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 7);
-
-                sorted.forEach((item, idx) => {
+                const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+                tbody.innerHTML = "";
+                sorted.forEach(([name,count], i) => {
+                    const cls = ["rank-1","rank-2","rank-3"][i] || "rank-other";
                     const tr = document.createElement("tr");
-                    tr.className = "border-b border-gray-200";
-                    if (idx === 0) tr.classList.add("gold");
-                    else if (idx === 1) tr.classList.add("silver");
-                    else if (idx === 2) tr.classList.add("bronze");
-                    else tr.classList.add("bg-white");
-
                     tr.innerHTML = `
-                        <td class="p-3 border-r border-gray-200">${idx + 1}</td>
-                        <td class="p-3 border-r border-gray-200">${item[0]}</td>
-                        <td class="p-3">${item[1]}</td>
+                        <td><span class="rank-badge ${cls}">${i+1}</span></td>
+                        <td>${name}</td>
+                        <td style="font-weight:600">${count}</td>
                     `;
                     tbody.appendChild(tr);
                 });
-            } catch (e) { console.error("[Lineage App] Leaderboard Error:", e); }
+            } catch(e) { console.error(e); }
         }
 
-        // 3. RECENT ENTRIES (New Function)
+        // ─── RECENT ENTRIES ───
         async function loadRecentEntries() {
             const tbody = document.getElementById("recent-entries-body");
-            tbody.innerHTML = "<tr><td colspan='4' class='text-center p-4 text-gray-500'>Loading...</td></tr>";
-
             try {
-                // Get top 5 sorted by timestamp desc
-                const q = query(
-                    collection(db, "mentorship"),
-                    orderBy("timestamp", "desc"),
-                    limit(5)
-                );
-
+                const q = query(collection(db,"mentorship"), orderBy("timestamp","desc"), limit(5));
                 const snap = await getDocs(q);
-
-                tbody.innerHTML = ""; // Clear loading message
-
+                tbody.innerHTML = "";
                 if (snap.empty) {
-                    tbody.innerHTML = "<tr><td colspan='4' class='text-center p-4 text-gray-500'>No entries yet.</td></tr>";
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:1.5rem">No entries yet.</td></tr>`;
                     return;
                 }
-
                 snap.forEach(doc => {
                     const d = doc.data();
                     const tr = document.createElement("tr");
-                    tr.className = "border-b border-gray-200 hover:bg-gray-50 transition";
                     tr.innerHTML = `
-                        <td class="p-3 border-r border-gray-200 font-semibold text-gray-800">${d.memberName}</td>
-                        <td class="p-3 border-r border-gray-200">${d.gradYear}</td>
-                        <td class="p-3 border-r border-gray-200">${d.bigName}</td>
-                        <td class="p-3 text-sm text-gray-600">${d.submittedBy}</td>
+                        <td>${d.memberName}</td>
+                        <td>${d.gradYear}</td>
+                        <td>${d.bigName}</td>
+                        <td style="color:var(--ink-soft)">${d.submittedBy}</td>
                     `;
                     tbody.appendChild(tr);
                 });
-            } catch (e) {
-                console.error("[Lineage App] Recent Entries Error:", e);
-                tbody.innerHTML = "<tr><td colspan='4' class='text-center p-4 text-red-500'>Error loading entries (Check Firestore Index).</td></tr>";
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#c0392b;padding:1.5rem">Error loading (check Firestore index).</td></tr>`;
+                console.error(e);
             }
         }
 
-        // 4. SEARCH (Case-Insensitive + Contains)
+        // ─── SEARCH ───
         async function searchMember() {
             const val = document.getElementById("searchName").value.trim().toLowerCase();
             const res = document.getElementById("searchResult");
             res.innerHTML = "";
-
             if (!val) return;
 
             if (cachedMembers.length === 0) {
-                res.innerHTML = "<p class='text-gray-500'>Data is still loading, please wait...</p>";
+                res.innerHTML = `<p style="color:var(--ink-soft);font-size:0.85rem;margin-top:0.5rem">Data still loading…</p>`;
                 return;
             }
 
-            try {
-                const results = cachedMembers.filter(d =>
-                    d.memberName.toLowerCase().includes(val)
-                );
-
-                if (results.length === 0) {
-                    res.innerHTML = "<p class='text-red-600'>Not found.</p>";
-                } else {
-                    results.slice(0, 10).forEach(d => {
-                        const card = document.createElement('div');
-                        card.className = "p-3 bg-gray-50 border border-gray-200 rounded shadow-sm";
-                        card.innerHTML = `
-                            <p><strong>Name:</strong> ${d.memberName}</p>
-                            <p><strong>Class:</strong> ${d.gradYear}</p>
-                            <p><strong>Big:</strong> ${d.bigName}</p>
-                            <p class="text-sm text-gray-500 mt-1">By: ${d.submittedBy}</p>
-                        `;
-
-                        const locateBtn = document.createElement('button');
-                        locateBtn.textContent = "Locate in Tree";
-                        locateBtn.className = "mt-2 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition";
-                        locateBtn.onclick = () => zoomToMember(d.memberName);
-
-                        card.appendChild(locateBtn);
-                        res.appendChild(card);
-                    });
-                }
-            } catch (e) { console.error("[Lineage App] Search Error:", e); }
-        }
-
-        // 5. ZOOM TO MEMBER LOGIC
-        function zoomToMember(name) {
-            if (!globalSvg || !globalZoom) {
-                alert("Tree not loaded yet.");
+            const results = cachedMembers.filter(d => d.memberName.toLowerCase().includes(val));
+            if (!results.length) {
+                res.innerHTML = `<p style="color:var(--red-accent);font-size:0.85rem;margin-top:0.5rem">No member found.</p>`;
                 return;
             }
 
-            let targetNode = null;
-            d3.selectAll(".node").each(function (d) {
-                if (d.data.name === name) {
-                    targetNode = d;
-                }
+            results.slice(0,10).forEach(d => {
+                const card = document.createElement('div');
+                card.className = "result-card";
+                card.innerHTML = `
+                    <p><strong>${d.memberName}</strong></p>
+                    <p>Class of ${d.gradYear} &nbsp;·&nbsp; Big: ${d.bigName}</p>
+                    <p class="result-meta">Added by ${d.submittedBy}</p>
+                `;
+                const btn = document.createElement('button');
+                btn.textContent = "Locate in tree →";
+                btn.className = "btn-locate";
+                btn.onclick = () => zoomToMember(d.memberName);
+                card.appendChild(btn);
+                res.appendChild(card);
             });
-
-            if (targetNode) {
-                const container = document.getElementById("tree-container");
-                const w = container.clientWidth;
-                const h = container.clientHeight;
-
-                const scale = 2;
-                const tx = (w / 2) - (targetNode.x * scale);
-                const ty = (h / 2) - (targetNode.y * scale);
-
-                globalSvg.transition()
-                    .duration(1000)
-                    .call(globalZoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
-
-                d3.selectAll(".node rect")
-                    .attr("stroke", "#333")
-                    .attr("stroke-width", 1);
-
-                d3.selectAll(".node").filter(d => d.data.name === name).select("rect")
-                    .transition().duration(500)
-                    .attr("stroke", "#EF4444") // Red
-                    .attr("stroke-width", 4)
-                    .transition().delay(2000).duration(500)
-                    .attr("stroke", "#333")
-                    .attr("stroke-width", 1);
-
-                document.getElementById("familyTreeSection").scrollIntoView({ behavior: 'smooth' });
-
-            } else {
-                alert(`Member "${name}" found in search, but is hidden by the current 'Min Tree Size' filter.`);
-            }
         }
 
-        // 6. FAMILY TREE
-        async function loadFamilyTree() {
-            const container = document.getElementById("tree-container");
+        // ─── ZOOM TO MEMBER ───
+        function zoomToMember(name) {
+            if (!globalSvg || !globalZoom) return alert("Tree not loaded.");
+            let target = null;
+            d3.selectAll(".node").each(function(d) {
+                if (d.data.name === name) target = d;
+            });
+            if (!target) return alert(`"${name}" is hidden by the current Min Tree Size filter.`);
 
+            const cont = document.getElementById("tree-container");
+            const w = cont.clientWidth, h = cont.clientHeight;
+            const scale = 2;
+            globalSvg.transition().duration(900)
+                .call(globalZoom.transform, d3.zoomIdentity
+                    .translate(w/2 - target.x*scale, h/2 - target.y*scale)
+                    .scale(scale));
+
+            d3.selectAll(".node rect").attr("stroke","#ddd").attr("stroke-width",1);
+            d3.selectAll(".node").filter(d => d.data.name === name).select("rect")
+                .transition().duration(400).attr("stroke","#C0392B").attr("stroke-width",3)
+                .transition().delay(2200).duration(500).attr("stroke","#ddd").attr("stroke-width",1);
+
+            document.getElementById("familyTreeSection").scrollIntoView({behavior:"smooth"});
+        }
+
+        // ─── LOAD TREE ───
+        async function loadFamilyTree() {
+            const cont = document.getElementById("tree-container");
             try {
-                const snap = await getDocs(collection(db, "mentorship"));
+                const snap = await getDocs(collection(db,"mentorship"));
                 if (snap.empty) {
-                    container.innerHTML = "<div class='text-gray-500 p-10'>No members found in database yet. Add one!</div>";
+                    cont.innerHTML = `<span class="loading-msg">No members yet — add one above!</span>`;
                     return;
                 }
-
                 cachedMembers = [];
                 snap.forEach(d => cachedMembers.push(d.data()));
-
-                const minSize = parseInt(document.getElementById("minTreeSize").value) || 1;
-                reloadTreeFromCache(minSize);
-
-            } catch (error) {
-                console.error("[Lineage App] Tree Load Error:", error);
-                container.innerHTML = "<div class='text-red-500 p-10'>Error loading tree. Check console.</div>";
+                reloadTreeFromCache(parseInt(document.getElementById("minTreeSize").value) || 1);
+            } catch(e) {
+                cont.innerHTML = `<span class="loading-msg" style="color:#c0392b">Error loading tree. Check console.</span>`;
+                console.error(e);
             }
         }
 
         function reloadTreeFromCache(minSize) {
-            const container = document.getElementById("tree-container");
-            container.innerHTML = "";
-
+            const cont = document.getElementById("tree-container");
+            cont.innerHTML = "";
             const data = buildData(cachedMembers, minSize);
-
             if (!data) {
-                container.innerHTML = `<div class='text-gray-500 p-10 flex flex-col items-center'>
-                    <p>No lineage trees found with size >= ${minSize}.</p>
-                    <p class='text-sm mt-2'>Try lowering the Minimum Tree Size.</p>
-                </div>`;
+                cont.innerHTML = `<span class="loading-msg">No trees with ≥ ${minSize} members. Lower the filter.</span>`;
                 return;
             }
-
-            renderTree(data, container);
+            renderTree(data, cont);
         }
 
         function buildData(members, minSize) {
@@ -582,40 +805,29 @@
             const roots = new Map(map);
 
             map.forEach(node => {
-                if (node.big) {
-                    const bigNode = map.get(node.big);
-                    if (bigNode) {
-                        bigNode.children.push(node);
-                        roots.delete(node.id);
-                    } else {
-                        if (map.has(node.big)) {
-                            map.get(node.big).children.push(node);
-                        } else {
-                            const dummy = { id: node.big, name: node.big, year: 'N/A', big: null, children: [node], isDummy: true };
-                            map.set(dummy.id, dummy);
-                            roots.set(dummy.id, dummy);
-                        }
-                        roots.delete(node.id);
-                    }
+                if (!node.big) return;
+                const bigNode = map.get(node.big);
+                if (bigNode) {
+                    bigNode.children.push(node);
+                    roots.delete(node.id);
+                } else {
+                    const dummy = { id: node.big, name: node.big, year:'N/A', big:null, children:[node], isDummy:true };
+                    map.set(dummy.id, dummy);
+                    roots.set(dummy.id, dummy);
+                    roots.delete(node.id);
                 }
             });
 
-            let finalRoots = Array.from(roots.values());
-            finalRoots = finalRoots.filter(root => getTreeSize(root) >= minSize);
-
-            if (finalRoots.length === 0) return null;
+            let finalRoots = Array.from(roots.values()).filter(r => getTreeSize(r) >= minSize);
+            if (!finalRoots.length) return null;
             if (finalRoots.length === 1) return finalRoots[0];
-            return { id: "Root", name: "Society", year: "", children: finalRoots, isRoot: true };
+            return { id:"Root", name:"Society", year:"", children: finalRoots, isRoot: true };
         }
 
         function getTreeSize(node) {
-            let count = 1;
-            if (node.children && node.children.length > 0) {
-                node.children.forEach(child => {
-                    count += getTreeSize(child);
-                });
-            }
-            return count;
+            let c = 1;
+            (node.children||[]).forEach(ch => c += getTreeSize(ch));
+            return c;
         }
 
         function renderTree(data, container) {
@@ -623,91 +835,71 @@
             const h = container.clientHeight;
 
             globalSvg = d3.select(container).append("svg")
-                .attr("width", w)
-                .attr("height", h)
-                .style("touch-action", "none");
+                .attr("width", w).attr("height", h)
+                .style("touch-action","none");
 
             const g = globalSvg.append("g");
 
-            const treeLayout = d3.tree().nodeSize([200, 120]);
+            const treeLayout = d3.tree().nodeSize([190, 110]);
             const root = d3.hierarchy(data);
             treeLayout(root);
 
-            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            let minX=Infinity, maxX=-Infinity, minY=Infinity;
             root.each(d => {
-                if (d.x < minX) minX = d.x;
-                if (d.x > maxX) maxX = d.x;
-                if (d.y < minY) minY = d.y;
-                if (d.y > maxY) maxY = d.y;
+                if(d.x<minX)minX=d.x; if(d.x>maxX)maxX=d.x; if(d.y<minY)minY=d.y;
             });
+            const midX = (minX+maxX)/2;
+            const tW = maxX-minX, tH = root.height*110;
+            let scale = Math.min(w/(tW+200), h/(tH+200));
+            scale = Math.max(0.15, Math.min(scale, 1));
 
-            const treeWidth = maxX - minX;
-            const treeHeight = maxY - minY;
-            const midX = (minX + maxX) / 2;
-            const midY = (minY + maxY) / 2;
+            const initT = d3.zoomIdentity.translate(w/2, 50).scale(scale).translate(-midX, -minY);
 
-            let scale = Math.min(w / (treeWidth + 200), h / (treeHeight + 200));
-            if (scale > 1) scale = 1;
-            if (scale < 0.2) scale = 0.2;
+            globalZoom = d3.zoom().scaleExtent([0.08,3]).on("zoom", e => g.attr("transform", e.transform));
+            globalSvg.call(globalZoom).call(globalZoom.transform, initT);
 
-            const initialTransform = d3.zoomIdentity
-                .translate(w / 2, 50)
-                .scale(scale)
-                .translate(-midX, -minY);
-
-            globalZoom = d3.zoom()
-                .scaleExtent([0.1, 3])
-                .on("zoom", (e) => {
-                    g.attr("transform", e.transform);
-                });
-
-            globalSvg.call(globalZoom)
-                .call(globalZoom.transform, initialTransform);
-
+            // Links
             g.selectAll(".link")
                 .data(root.links())
                 .enter().append("path")
-                .attr("class", "link")
-                .attr("fill", "none")
-                .attr("stroke", "#999")
-                .attr("stroke-width", 2)
-                .attr("d", d3.linkVertical().x(d => d.x).y(d => d.y));
+                .attr("fill","none")
+                .attr("stroke","#E5D9BF")
+                .attr("stroke-width",1.5)
+                .attr("d", d3.linkVertical().x(d=>d.x).y(d=>d.y));
 
+            // Nodes
             const nodes = g.selectAll(".node")
                 .data(root.descendants().filter(d => !d.data.isRoot))
                 .enter().append("g")
-                .attr("class", "node")
-                .attr("transform", d => `translate(${d.x},${d.y})`)
-                .style("cursor", "pointer");
+                .attr("class","node")
+                .attr("transform", d=>`translate(${d.x},${d.y})`)
+                .style("cursor","pointer");
 
             nodes.append("rect")
-                .attr("x", -85)
-                .attr("y", -35)
-                .attr("width", 170)
-                .attr("height", 70)
-                .attr("rx", 8)
-                .attr("ry", 8)
-                .attr("fill", d => d.data.isDummy ? "#4299E1" : "#FBC02D")
-                .attr("stroke", "#333")
-                .attr("stroke-width", 1)
-                .style("filter", "drop-shadow(2px 2px 2px rgba(0,0,0,0.2))");
+                .attr("x",-80).attr("y",-28).attr("width",160).attr("height",56)
+                .attr("rx",8).attr("ry",8)
+                .attr("fill", d => d.data.isDummy ? "#2C3E50" : "#F5C842")
+                .attr("stroke", d => d.data.isDummy ? "#2C3E50" : "#C9922A")
+                .attr("stroke-width",1)
+                .style("filter","drop-shadow(0 2px 4px rgba(26,21,16,0.08))");
 
             nodes.append("text")
-                .attr("dy", "-0.2em")
-                .attr("text-anchor", "middle")
-                .style("font-size", "14px")
-                .style("font-weight", "bold")
-                .attr("fill", d => d.data.isDummy ? "white" : "black")
+                .attr("dy","-0.15em")
+                .attr("text-anchor","middle")
+                .style("font-family","'DM Sans',sans-serif")
+                .style("font-size","13px")
+                .style("font-weight","600")
+                .attr("fill", d => d.data.isDummy ? "#ecf0f1" : "var(--ink)")
                 .text(d => d.data.name);
 
             nodes.append("text")
-                .attr("dy", "1.2em")
-                .attr("text-anchor", "middle")
-                .style("font-size", "12px")
-                .attr("fill", d => d.data.isDummy ? "#eee" : "#444")
-                .text(d => d.data.year === 'N/A' ? 'Unlisted Big' : `Class of ${d.data.year}`);
+                .attr("dy","1.1em")
+                .attr("text-anchor","middle")
+                .style("font-family","'DM Sans',sans-serif")
+                .style("font-size","11px")
+                .attr("fill", d => d.data.isDummy ? "#bdc3c7" : "var(--ink-soft)")
+                .text(d => d.data.year === 'N/A' ? 'Unlisted Big' : (d.data.year ? `'${String(d.data.year).slice(2)}` : ''));
         }
     </script>
 </body>
-
 </html>
